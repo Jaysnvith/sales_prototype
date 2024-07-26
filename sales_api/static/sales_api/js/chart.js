@@ -67,9 +67,9 @@ var pieChart = new Chart(document.getElementById('pieDash'), {
 var lineChart = new Chart(document.getElementById('lineDash'), {
   type: 'line',
   data: {
-    labels: ['January', 'February', 'March', 'April', 'Mei', 'June', 'Juli', 'August', 'September', 'October', 'November', 'Desember'],
+    labels: line_labels,
     datasets: [{
-      data: [10, 11, 28, 15, 10, 2, 17, 19, 14, 15, 24, 22], // Adjusted data to be numbers
+      data: line_counts, // Adjusted data to be numbers
       borderColor: linkColor,
       fill: false
     }]

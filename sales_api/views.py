@@ -7,6 +7,7 @@ from django.utils.timezone import now
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Sum
+from django.db.models.functions import ExtractMonth
 
 from .models import Sale, Product, Customer
 from .forms import UserForm, SaleForm, ProductForm, CustomerForm
@@ -35,7 +36,6 @@ def SalesDashboard(request):
     previous_month = now().month - 1
     current_year = now().year
     previous_year = now().year - 1
-    month_name = calendar.month_name[current_month]
     
     monthly_purchases = Sale.objects.filter(sale_date__month = current_month, sale_date__year = current_year).count()
     current_sales = Sale.objects.filter(sale_date__month = current_month, sale_date__year = current_year).aggregate(total = Sum('total_price'))['total']
@@ -45,7 +45,7 @@ def SalesDashboard(request):
     total_cust = Customer.objects.count()
 
     # Bar chart data
-    top_sales = Sale.objects.filter(sale_date__month=current_month, sale_date__year=current_year).values('product__name').annotate(total_quantity=Sum('quantity')).order_by('-total_quantity')[:5]
+    top_sales = Sale.objects.filter(sale_date__month=current_month, sale_date__year=current_year).values('product__name').annotate(total_quantity=Sum('quantity')).order_by('-total_quantity')
     bar_data = {
         'labels': [item['product__name'] for item in top_sales],
         'counts': [item['total_quantity'] for item in top_sales],
@@ -57,9 +57,15 @@ def SalesDashboard(request):
         'labels': [item['product__name'] for item in product_sales],
         'counts': [float(item['total_price']) for item in product_sales],
     }
-    
+
+    month_current_year = Sale.objects.filter(sale_date__year=current_year).annotate(month=ExtractMonth('sale_date')).values('month').annotate(total_sales=Sum('total_price')).order_by('month')
+    line_data = {
+        'labels': [calendar.month_name[item['month']] for item in month_current_year],
+        'counts': [float(item['total_sales']) for item in month_current_year], 
+    }
+
     context = {
-        'month_name': month_name,
+        'month_name': calendar.month_name[current_month],
         'current_year': current_year,
         
         'current_sales': current_sales,
@@ -71,6 +77,7 @@ def SalesDashboard(request):
         
         'bar_data': bar_data,
         'pie_data': pie_data,
+        'line_data': line_data,
     }
 
     return render(request, 'sales_api/sales_dashboard.html', context)

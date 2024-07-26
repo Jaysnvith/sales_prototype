@@ -81,7 +81,7 @@
       </div>
     </div>
     <div class="column">
-      <div class="box is-floating-y" >
+      <div class="box is-floating-y" style="min-height: 50vh;">
         <canvas id="barDash"></canvas>
       </div>
     </div>
@@ -102,5 +102,7 @@
       let bar_counts = {{ bar_data.counts|safe }};
       let pie_labels = {{ pie_data.labels|safe }};
       let pie_counts = {{ pie_data.counts|safe }};
+      let line_labels = {{ line_data.labels|safe }};
+      let line_counts = {{ line_data.counts|safe }};
   </script>
 {% endblock %}
