@@ -1,0 +1,41 @@
+// Use Bulma
+//@use "bulma/sass/base";
+//@use "bulma/sass/components/card";
+//@use "bulma/sass/components/menu";
+//@use "bulma/sass/components/navbar";
+//@use "bulma/sass/components/pagination";
+//@use "bulma/sass/elements";
+//@use "bulma/sass/form";
+//@use "bulma/sass/helpers/color";
+//@use "bulma/sass/helpers/overflow";
+//@use "bulma/sass/helpers/position";
+//@use "bulma/sass/helpers/spacing";
+//@use "bulma/sass/helpers/typography";
+//@use "bulma/sass/helpers/visibility";
+//@use "bulma/sass/grid/columns-v2";
+//@use "bulma/sass/layout";
+//@use "bulma/sass/themes";
+
+@use "bulma/sass" with (
+  $navbar-breakpoint: 768px,
+);
+
+// Mixin
+@mixin hover($property, $value, $time) {
+  transition: all $time;
+  &:hover {
+    #{$property}: #{$value};
+  }
+}
+
+// Custom Class
+.is-floating-y {
+  @include hover(transform,translateY(-7px), 0.25s)
+}
+.is-floating-x {
+  @include hover(transform,translateX(5px), 0.25s)
+}
+
+.is-colorized {
+  @include hover(color, #858ee6, 0.25s)
+}

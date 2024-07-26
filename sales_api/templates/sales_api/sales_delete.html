@@ -1,0 +1,41 @@
+{% extends "sales_api/master.html" %}
+
+{% block title %}{% block header %}
+  Delete
+{% endblock %}{% endblock %}
+
+{% block content %}
+{% if perms.sales_api %}
+
+<!-- Header -->
+<div class="block">
+  <span class="icon-text is-size-4">
+    <span class="icon">
+      <i class="fa-solid fa-eraser"></i>
+    </span>
+    <span><b>Delete</b></span>
+  </span>
+</div>
+
+<!-- Delete Form -->
+<div class="box is-floating-y">
+  <form method="post" action="" id="data" class="block">
+    {% csrf_token %}
+    <p>You are about to delete <b>{{ object }}</b>, are you sure?</p>
+  </form>
+  <div class="field is-grouped">
+    <button type="submit" class="button is-success" form="data">
+      <span>Save</span><span class="icon"><i class="fa-solid fa-check ml-2"></i></span>
+    </button>
+    <a id="cancel-button" class="button is-danger">
+      <span>Cancel</span><span class="icon"><i class="fa-solid fa-xmark ml-2"></i></span>
+    </a>
+  </div>
+  {% else %}
+  <div class="block">
+    <p>You are not a staff</p>
+    <a href="{% url 'login' %}">Log in as staff</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

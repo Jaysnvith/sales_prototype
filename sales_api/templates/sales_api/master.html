@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}{% endblock %}</title>
+
+    <!-- Static -->
+    {% load static %}
+    <script src="{% static 'sales_api/js/jquery-3.7.1.min.js' %}"></script> <!-- jQuery -->
+    <script type="module" src="{% static 'sales_api/js/chart.js' %}"></script> <!-- Chart.js -->
+    <script src="{% static 'sales_api/js/main.js' %}"></script> <!-- Navbar -->
+    <link href="{% static 'sales_api/css/master.css' %}" rel="stylesheet" /> <!-- CSS -->
+    <link rel="icon" type="image/png" href="{% static 'sales_api/favicon.ico' %}" /> <!-- Favicon -->
+
+    <!-- CDN -->
+    <link href="https://cdn.datatables.net/v/bm/dt-2.0.8/datatables.min.css" rel="stylesheet" /> <!-- DataTables -->
+    <script src="https://cdn.datatables.net/v/bm/dt-2.0.8/datatables.min.js"></script> <!-- DataTables -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script> <!-- Chart.js -->
+    <script src="https://kit.fontawesome.com/0a4905cadf.js" crossorigin="anonymous"></script><!-- FontAwesome -->
+  </head>
+  <body class="has-navbar-fixed-top my-4">
+    {% if user.is_authenticated %}
+      <!-- Navbar -->
+      <nav class="navbar is-fixed-top is-transparent has-text-weight-bold">
+        <div class="container is-fluid">
+          <div class="navbar-brand">
+            <div class="navbar-item">
+              <img src="{% static 'sales_api/img/sales.png' %}" style="max-height: 1.6rem;" />
+              <p class="ml-3 is-size-5">SALES APP</p>
+            </div>
+            <a role="button" class="navbar-burger" data-target="navbarMenu" aria-label="menu" aria-expanded="false">
+              <span aria-hidden="true"></span>
+              <span aria-hidden="true"></span>
+              <span aria-hidden="true"></span>
+              <span aria-hidden="true"></span>
+            </a>
+          </div>
+          <div id="navbarMenu" class="navbar-menu">
+            <div class="navbar-start is-hidden-tablet">
+              <a class="navbar-item {% if request.resolver_match.url_name == 'dashboard' %}is-active{% endif %}" href="{% url 'sales_api:dashboard' %}">
+                <span class="icon-text">
+                  <span class="icon"><i class="fa-solid fa-gauge {% if request.resolver_match.url_name == 'dashboard' %}fa-flip{% endif %}"></i></span>
+                  <span>Dashboard</span>
+                </span>
+              </a>
+              <a class="navbar-item {% if request.resolver_match.url_name == 'sale' %}is-active{% endif %}" href="{% url 'sales_api:sale' %}">
+                <span class="icon-text">
+                  <span class="icon"><i class="fa-solid fa-sack-dollar {% if request.resolver_match.url_name == 'sale' %}fa-flip{% endif %}"></i></span>
+                  <span>Sales</span>
+                </span>
+              </a>
+              <a class="navbar-item {% if request.resolver_match.url_name == 'product' %}is-active{% endif %}" href="{% url 'sales_api:product' %}">
+                <span class="icon-text">
+                  <span class="icon"><i class="fa-solid fa-boxes-stacked {% if request.resolver_match.url_name == 'product' %}fa-flip{% endif %}"></i></span>
+                  <span>Products</span>
+                </span>
+              </a>
+              <a class="navbar-item {% if request.resolver_match.url_name == 'customer' %}is-active{% endif %}" href="{% url 'sales_api:customer' %}">
+                <span class="icon-text">
+                  <span class="icon"><i class="fa-solid fa-users {% if request.resolver_match.url_name == 'customer' %}fa-flip{% endif %}"></i></span>
+                  <span>Customers</span>
+                </span>
+              </a>
+            </div>
+            <div class="navbar-end">
+              <div class="navbar-item has-dropdown is-hoverable">
+                <div class="navbar-link is-arrowless">
+                  Welcome, {{ user.username }}
+                  <figure class="image is-24x24 is-hidden-touch ml-2">
+                    <img class="is-rounded" src="{% static 'sales_api/img/user.png' %}" alt="User Pic" />
+                  </figure>
+                </div>
+                <div class="navbar-dropdown">
+                  <a class="navbar-item {% if request.resolver_match.url_name == 'user' %}is-active{% endif %}" href="{% url 'sales_api:user' %}">Profile</a>
+                  {% if user.is_superuser %}<a class="navbar-item" href="{% url 'admin:index' %}">Admin</a>{% endif %}
+                  <hr class="navbar-divider">
+                  <div class="navbar-item">
+                    <button class="button is-fullwidth" id="theme-toggle">
+                      <span class="icon-text">
+                        <span class="icon is-small"><i  id="theme-icon"></i></span>
+                        <span id="theme-name">Theme</span>
+                      </span>
+                    </button>
+                  </div>
+                  <hr class="navbar-divider is-hidden-touch">
+                  <div class="navbar-item is-hidden-touch">Ver 0.8.0</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div class="container is-fluid">
+        <div class="columns">
+          <!-- Sidebar -->
+          <div class="column">
+            <aside class="menu is-hidden-mobile">
+              <p class="menu-label">General</p>
+              <ul class="menu-list">
+                <li>
+                  <a class="{% if request.resolver_match.url_name == 'dashboard' %}is-active{% else %} is-floating-x{% endif %}" href="{% url 'sales_api:dashboard' %}">
+                    <span class="icon-text">
+                      <span class="icon"><i class="fa-solid fa-gauge {% if request.resolver_match.url_name == 'dashboard' %}fa-flip{% endif %}"></i></span>
+                      <span>Dashboard</span>
+                    </span>
+                  </a>
+                </li>
+              </ul>
+              <p class="menu-label">Database</p>
+              <ul class="menu-list">
+                <li>
+                  <a class="{% if request.resolver_match.url_name == 'sale' %}is-active{% else %}is-floating-x{% endif %}" href="{% url 'sales_api:sale' %}">
+                    <span class="icon-text">
+                      <span class="icon"><i class="fa-solid fa-sack-dollar {% if request.resolver_match.url_name == 'sale' %}fa-flip{% endif %}"></i></span>
+                      <span>Sales</span>
+                    </span>
+                  </a>
+                </li>
+                <li>
+                  <a class="{% if request.resolver_match.url_name == 'product' %}is-active{% else %}is-floating-x{% endif %}" href="{% url 'sales_api:product' %}">
+                    <span class="icon-text">
+                      <span class="icon"><i class="fa-solid fa-boxes-stacked {% if request.resolver_match.url_name == 'product' %}fa-flip{% endif %}"></i></span>
+                      <span>Products</span>
+                    </span>
+                  </a>
+                </li>
+                <li>
+                  <a class="{% if request.resolver_match.url_name == 'customer' %}is-active{% else %}is-floating-x{% endif %}" href="{% url 'sales_api:customer' %}">
+                    <span class="icon-text">
+                      <span class="icon"><i class="fa-solid fa-users {% if request.resolver_match.url_name == 'customer' %}fa-flip{% endif %}"></i></span>
+                      <span>Customers</span>
+                    </span>
+                  </a>
+                </li>
+              </ul>
+            </aside>
+          </div>
+
+          <!-- Content -->
+          <div class="column is-10">
+            <script type="module" src="{% static 'sales_api/js/table.js' %}"></script>
+            <div class="container is-fluid">
+              {% block content %}
+              {% endblock %}
+            </div>
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <p>You are not logged in</p>
+      <a href="{% url 'login' %}">Log In</a>
+    {% endif %}
+  </body>
+</html>

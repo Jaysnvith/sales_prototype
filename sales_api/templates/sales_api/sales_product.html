@@ -1,0 +1,70 @@
+{% extends "sales_api/master.html" %}
+
+{% block title %}{% block header %}
+  Products
+{% endblock %}{% endblock %}
+
+{% block content %}
+<div class="card is-floating-y">
+
+  <!-- Header -->
+  <div class="card-header">
+    <span class="icon-text is-size-4 card-header-title">
+      <span class="icon"><i class="fa-solid fa-boxes-stacked"></i></span>
+      <span>Products</span>
+    </span>
+    <div class="card-header-icon">    
+      <a class="is-colorized has-text-weight-bold" href="{% url "sales_api:productadd" %}">
+        <span class="icon-text">
+          <span>Add</span>
+          <span class="icon"><i class="fas fa-plus"></i></span>
+        </span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="card-content">
+    <table class="table is-size-7 is-bordered is-hoverable" id="mastertable" style="width:100%">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Price</th>
+          <th>Description</th>
+          <th class="disable-sorting"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in products_list %}
+        <tr>
+          <td>{{ item.id }}</td>
+          <td>{{ item.name }}</td>
+          <td>${{ item.price }}</td>
+          <td>{{ item.description }}</td>
+          <td>
+            <div class="field has-addons">
+              <p class="control">
+                <a class="button is-small is-success" href="/sales/product/item_{{ item.id }}">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </a>
+              </p>
+              <p class="control">
+                <a class="button is-small is-danger" href="/sales/product/del_item_{{ item.id }}">
+                  <i class="fa-solid fa-eraser"></i>
+                </a>
+              </p>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+      </tbody>
+      <tr>
+        <td colspan="6">No data yet...</td>
+      </tr>
+        {% endfor %}
+    </table>
+  </div>
+  
+</div>
+{% endblock %}

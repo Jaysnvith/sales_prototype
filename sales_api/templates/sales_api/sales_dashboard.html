@@ -1,0 +1,106 @@
+{% extends 'sales_api/master.html' %}
+{% load humanize %}
+
+{% block title %}
+  {% block header %}
+    Dashboard
+  {% endblock %}
+{% endblock %}
+
+{% block content %}
+  <!-- Header -->
+  <div class="block">
+    <div class="level">
+      <div class="level-left">
+        <span class="icon-text is-size-4">
+          <span class="icon"><i class="fa-solid fa-gauge"></i></span>
+          <span>Dashboard</span>
+        </span>
+      </div>
+      <div class="level-right">
+        <p class="is-size-4">{{ month_name }} - {{ current_year }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Report -->
+  <div class="columns is-multiline">
+    <div class="column is-two-fifths">
+      <div class="box is-floating-y">
+        <nav class="level is-mobile has-text-centered">
+          <div class="level-item">
+            <a class="is-colorized" href="{% url 'sales_api:product' %}">
+              <span class="icon-text">
+                <span class="is-size-3">{{ total_item|safe }}</span>
+                <span class="icon"><i class="fa-solid fa-boxes-stacked fa-beat"></i></span>
+              </span>
+              <p>Products</p>
+            </a>
+          </div>
+          <div class="level-item">
+            <a class="is-colorized" href="{% url 'sales_api:customer' %}">
+              <span class="icon-text">
+                <span class="is-size-3">{{ total_cust|safe }}</span>
+                <span class="icon"><i class="fa-solid fa-users fa-beat"></i></span>
+              </span>
+              <p>Customers</p>
+            </a>
+          </div>
+        </nav>
+      </div>
+      <div class="card is-floating-y">
+        <div class="card-header">
+          <p class="card-header-title">Monthly Recapitulation </p>
+        </div>
+        <div class="card-content">
+          <nav class="level">
+            <div class="level-item">
+              <p class="is-size-3 has-text-weight-bold">${{ current_sales|safe|intcomma }}</p>
+            </div>
+            <div class="level-item">
+              <span class="icon-text is-size-5 {% if  diff_sales < 0 %} has-text-danger">
+                <span class="icon"><i class="fa-solid fa-arrow-down fa-xs fa-beat"></i></span>
+                {% else %}has-text-success">
+                <span class="icon"><i class="fa-solid fa-arrow-up fa-xs fa-beat"></i></span>
+                {% endif %}
+                <span>{{ diff_sales|safe|floatformat }}%</span>
+              </span>
+            </div>
+          </nav>
+            <a class="is-colorized" href="{% url 'sales_api:sale' %}">
+              <p class="is-size-3 has-text-centered">{{ monthly_purchases|safe }} Purchases</p>
+            </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="column is-three-fifths">
+      <div class="box is-floating-y" >
+        <canvas id="pieDash"></canvas>
+      </div>
+    </div>
+    <div class="column">
+      <div class="box is-floating-y" >
+        <canvas id="barDash"></canvas>
+      </div>
+    </div>
+    <div class="column">
+      <div class="box is-floating-y">
+        <canvas id="lineDash"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Js -->
+  <script>
+      // Define chartData variable
+      let month_name = "{{ month_name }}";
+      let current_year = "{{ current_year }}"
+
+      let bar_labels = {{ bar_data.labels|safe }};
+      let bar_counts = {{ bar_data.counts|safe }};
+      let pie_labels = {{ pie_data.labels|safe }};
+      let pie_counts = {{ pie_data.counts|safe }};
+  </script>
+{% endblock %}

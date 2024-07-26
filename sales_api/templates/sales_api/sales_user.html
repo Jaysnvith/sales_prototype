@@ -1,0 +1,47 @@
+{% extends "sales_api/master.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% block header %}
+  Profile
+{% endblock %}{% endblock %}
+
+{% block content %}
+<div class="card">
+
+  <!-- Header -->
+  <div class="card-header">
+    <div class="card-header-title">
+      <span class="icon-text is-size-4">
+        <span class="icon"><i class="fa-solid fa-user"></i></span>
+        <span>Profile</span>
+      </span>
+    </div>
+    <form class="has-text-link" action="{% url 'logout' %}" method="post">
+      {% csrf_token %}
+      <button type="submit" class="card-header-icon has-text-weight-bold is-colorized">
+        <span class="icon-text">
+          <span>Log out</span>
+          <span class="icon"><i class="fa-solid fa-right-from-bracket"></i></span>
+        </span>
+      </button>
+    </form>
+  </div>
+
+  <!-- Content -->
+  <div class="card-content">
+    <form class="block" method="post" id="data">
+      {% csrf_token %}
+      {% crispy formuser %}
+    </form>
+    <div class="field is-grouped">
+      <button type="submit" class="button is-success" form="data">
+        <span class="icon-text">
+          <span>Save</span>
+          <span class="icon"><i class="fa-solid fa-check"></i></span>
+        </span>
+      </button>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

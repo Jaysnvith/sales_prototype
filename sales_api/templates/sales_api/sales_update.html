@@ -1,0 +1,45 @@
+{% extends "sales_api/master.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% block header %}
+  Update
+{% endblock %}{% endblock %}
+
+{% block content %}
+{% if perms.sales_api %}
+
+<!-- Header -->
+<div class="block">
+  <span class="icon-text is-size-4">
+    <span class="icon"><i class="fa-solid fa-pen-to-square"></i></span>
+    <span>Update</span>
+  </span>
+</div>
+
+<div class="box is-floating-y">
+  <!-- Update Form -->
+  <div class="block">
+    {% crispy form %}
+  </div>
+  <div class="field is-grouped">
+    <button type="submit" class="button is-success" form="data">
+      <span class="icon-text">
+        <span>Save</span>
+        <span class="icon"><i class="fa-solid fa-check"></i></span>
+      </span>
+    </button>
+    <a id="cancel-button" class="button is-danger">
+      <span class="icon-text">
+        <span>Cancel</span>
+        <span class="icon"><i class="fa-solid fa-xmark"></i></span>
+      </span>
+    </a>
+  </div>
+  {% else %}
+  <div class="block">
+    <p>You are not a staff</p>
+    <a href="{% url 'login' %}">Log in as staff</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
