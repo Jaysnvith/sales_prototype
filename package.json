@@ -12,7 +12,6 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "bulma": "^1.0.1",
     "sass": "^1.77.6"
   }
 }
