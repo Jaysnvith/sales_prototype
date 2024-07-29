@@ -1,9 +1,9 @@
 {% extends "sales_api/master.html" %}
 {% load crispy_forms_tags %}
 
-{% block title %}{% block header %}
+{% block title %}
   Update
-{% endblock %}{% endblock %}
+{% endblock %}
 
 {% block content %}
 {% if perms.sales_api %}
@@ -16,11 +16,14 @@
   </span>
 </div>
 
+<!-- Content Box -->
 <div class="box is-floating-y">
   <!-- Update Form -->
   <div class="block">
     {% crispy form %}
   </div>
+  
+  <!-- Action Buttons -->
   <div class="field is-grouped">
     <button type="submit" class="button is-success" form="data">
       <span class="icon-text">
@@ -35,11 +38,13 @@
       </span>
     </a>
   </div>
-  {% else %}
-  <div class="block">
-    <p>You are not a staff</p>
-    <a href="{% url 'login' %}">Log in as staff</a>
-  </div>
-  {% endif %}
 </div>
+
+{% else %}
+<!-- No Permission Message -->
+<div class="block">
+  <p>You are not a staff</p>
+  <a href="{% url 'login' %}">Log in as staff</a>
+</div>
+{% endif %}
 {% endblock %}

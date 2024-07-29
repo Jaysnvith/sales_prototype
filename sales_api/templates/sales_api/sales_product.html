@@ -1,8 +1,8 @@
 {% extends "sales_api/master.html" %}
 
-{% block title %}{% block header %}
+{% block title %}
   Products
-{% endblock %}{% endblock %}
+{% endblock %}
 
 {% block content %}
 <div class="card is-floating-y">
@@ -14,7 +14,7 @@
       <span>Products</span>
     </span>
     <div class="card-header-icon">    
-      <a class="is-colorized has-text-weight-bold" href="{% url "sales_api:productadd" %}">
+      <a class="is-colorized has-text-weight-bold" href="{% url 'sales_api:productadd' %}">
         <span class="icon-text">
           <span>Add</span>
           <span class="icon"><i class="fas fa-plus"></i></span>
@@ -58,11 +58,11 @@
           </td>
         </tr>
         {% empty %}
-      </tbody>
-      <tr>
-        <td colspan="6">No data yet...</td>
-      </tr>
+        <tr>
+          <td colspan="5">No data yet...</td>
+        </tr>
         {% endfor %}
+      </tbody>
     </table>
   </div>
   

@@ -2,35 +2,38 @@
 {% load crispy_forms_tags %}
 
 {% block account %}
-  <section class="hero is-fullheight">
-    <div class="hero-body">
-      <div class="container">
-        <div class="columns is-centered">
-          <div class="column is-4">
-            <p class="title has-text-centered is-floating-y">Login</p>
-            <div class="box">
-              <div class="block">
-                <form method="post" id="login">
-                  {% csrf_token %}
+<section class="hero is-fullheight">
+  <div class="hero-body">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-4">
+          <p class="title has-text-centered is-floating-y">Login</p>
+          <div class="box">
+            <div class="block">
+              <form method="post" id="login">
+                {% csrf_token %}
+                <fieldset>
+                  <legend class="is-hidden">Login Form</legend>
                   {{ form|crispy }}
-                </form>
-              </div>
-              <div class="block has-text-centered">
-                <button type="submit" class="button is-info" form="login">
-                  <span class="icon-text">
-                    <span class="icon"><i class="fa-solid fa-user-plus"></i></span>
-                    <span>Log In</span>
-                  </span>
-                </button>
-              </div>
-              <div class="block has-text-centered">
-                Dont have account ?
-                <a href="{% url 'signup' %}">Sign Up</a>
-              </div>
+                </fieldset>
+              </form>
+            </div>
+            <div class="block has-text-centered">
+              <button type="submit" class="button is-info" form="login" aria-label="Log In">
+                <span class="icon-text">
+                  <span class="icon"><i class="fa-solid fa-user-plus"></i></span>
+                  <span>Log In</span>
+                </span>
+              </button>
+            </div>
+            <div class="block has-text-centered">
+              Don't have an account? 
+              <a href="{% url 'signup' %}">Sign Up</a>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 {% endblock %}

@@ -1,8 +1,8 @@
 {% extends "sales_api/master.html" %}
 
-{% block title %}{% block header %}
+{% block title %}
   Delete
-{% endblock %}{% endblock %}
+{% endblock %}
 
 {% block content %}
 {% if perms.sales_api %}
@@ -31,11 +31,13 @@
       <span>Cancel</span><span class="icon"><i class="fa-solid fa-xmark ml-2"></i></span>
     </a>
   </div>
-  {% else %}
-  <div class="block">
-    <p>You are not a staff</p>
-    <a href="{% url 'login' %}">Log in as staff</a>
-  </div>
-  {% endif %}
 </div>
+
+{% else %}
+<!-- No Permission -->
+<div class="block">
+  <p>You are not a staff</p>
+  <a href="{% url 'login' %}">Log in as staff</a>
+</div>
+{% endif %}
 {% endblock %}
