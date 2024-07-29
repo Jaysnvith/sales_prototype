@@ -4,7 +4,9 @@ from . import views
 app_name='sales_api'
 urlpatterns = [
     path("user/", views.profile_view, name="user"),
+
     path("dashboard/", views.SalesDashboard, name="dashboard"),
+    path("report/", views.SalesReport, name="report"),
     path("product/", views.SalesProduct.as_view(), name="product"),
     path("order/", views.SalesSale.as_view(), name="sale"),
     path("customer/", views.SalesCustomer.as_view(), name="customer"),

@@ -82,6 +82,10 @@ def SalesDashboard(request):
 
     return render(request, 'sales_api/sales_dashboard.html', context)
 
+# Report
+def SalesReport(request):
+    return render(request,'sales_api/sales_report.html')
+
 # Table
 class SalesSale(LoginRequiredMixin, ListView):
     model = Sale
