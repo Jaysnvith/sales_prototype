@@ -58,9 +58,9 @@
               <p class="is-size-3 has-text-weight-bold">${{ current_sales|safe|intcomma }}</p>
             </div>
             <div class="level-item">
-              <span class="icon-text is-size-5 {% if diff_sales < 0 %} has-text-danger">
+              <span class="icon-text is-size-5" {% if diff_sales < 0 %} style="color: red;">
                 <span class="icon"><i class="fa-solid fa-arrow-down fa-xs fa-beat"></i></span>
-              {% else %} has-text-success">
+              {% else %} style="color: green;">
                 <span class="icon"><i class="fa-solid fa-arrow-up fa-xs fa-beat"></i></span>
               {% endif %}
                 <span>{{ diff_sales|safe|floatformat }}%</span>

@@ -1,24 +1,18 @@
-// Use Bulma
-//@use "bulma/sass/base";
-//@use "bulma/sass/components/card";
-//@use "bulma/sass/components/menu";
-//@use "bulma/sass/components/navbar";
-//@use "bulma/sass/components/pagination";
-//@use "bulma/sass/elements";
-//@use "bulma/sass/form";
-//@use "bulma/sass/helpers/color";
-//@use "bulma/sass/helpers/overflow";
-//@use "bulma/sass/helpers/position";
-//@use "bulma/sass/helpers/spacing";
-//@use "bulma/sass/helpers/typography";
-//@use "bulma/sass/helpers/visibility";
-//@use "bulma/sass/grid/columns-v2";
-//@use "bulma/sass/layout";
-//@use "bulma/sass/themes";
-
-@use "bulma/sass" with (
-  $navbar-breakpoint: 768px,
-);
+@use "bulma/sass/base";
+@use "bulma/sass/themes";
+@use "bulma/sass/components/card";
+@use "bulma/sass/components/menu";
+@use "bulma/sass/components/navbar";
+@use "bulma/sass/components/pagination";
+@use "bulma/sass/elements";
+@use "bulma/sass/form";
+@use "bulma/sass/helpers/overflow";
+@use "bulma/sass/helpers/position";
+@use "bulma/sass/helpers/spacing";
+@use "bulma/sass/helpers/typography";
+@use "bulma/sass/helpers/visibility";
+@use "bulma/sass/grid/columns-v2";
+@use "bulma/sass/layout";
 
 // Mixin
 @mixin hover($property, $value, $time) {
