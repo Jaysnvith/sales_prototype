@@ -16,15 +16,25 @@
         <span>Profile</span>
       </span>
     </div>
-    <form class="has-text-link" action="{% url 'logout' %}" method="post">
-      {% csrf_token %}
-      <button type="submit" class="card-header-icon has-text-weight-bold is-colorized">
-        <span class="icon-text">
-          <span>Log out</span>
-          <span class="icon"><i class="fa-solid fa-right-from-bracket"></i></span>
-        </span>
-      </button>
-    </form>
+    <button class="card-header-icon has-text-weight-bold is-colorized js-modal-trigger" data-target="modal-js">
+      <span class="icon-text">
+        <span>Log out</span>
+        <span class="icon"><i class="fa-solid fa-right-from-bracket"></i></span>
+      </span>
+    </button>
+  </div>
+
+  <!-- Log out Confirmation -->
+  <div id="modal-js" class="modal is-active">
+    <div class="modal-background"></div>
+    <div class="modal-content box">
+        <p class="subtitle has-text-centered">Do you want to log out ?</p>
+        <form class="field is-grouped" action="{% url 'logout' %}" method="post">
+          {% csrf_token %}
+          <button type="submit" class="button is-success is-responsive is-fullwidth">Yes</button>
+          <button type="button" class="button is-danger is-responsive is-fullwidth" aria-label="close">Cancel</button>
+        </form>
+    </div>
   </div>
 
   <!-- Content -->

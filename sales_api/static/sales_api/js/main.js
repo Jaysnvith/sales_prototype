@@ -45,5 +45,36 @@ $(document).ready(function() {
 
   toggleHoverClass('.menu-list li', 'fa-beat-fade');
   toggleHoverClass('.button', 'fa-beat-fade');
+
+  // MODAL
+  // Functions to open and close a modal
+  const openModal = ($el) => $el.classList.add('is-active');
+  const closeModal = ($el) => $el.classList.remove('is-active');
+
+  // Add a click event on buttons to open a specific modal
+  (document.querySelectorAll('.js-modal-trigger') || []).forEach(($trigger) => {
+    const modal = $trigger.dataset.target;
+    const $target = document.getElementById(modal);
+
+    $trigger.addEventListener('click', () => {
+      openModal($target);
+    });
+  });
+
+  // Add a click event on various child elements to close the parent modal
+  (document.querySelectorAll('.modal-background, .modal-content .button.is-danger') || []).forEach(($close) => {
+    const $target = $close.closest('.modal');
+
+    $close.addEventListener('click', () => {
+      closeModal($target);
+    });
+  });
+
+  // Add a keyboard event to close all modals
+  document.addEventListener('keydown', (event) => {
+    if(event.key === "Escape") {
+      closeAllModals();
+    }
+  });
 });
 
