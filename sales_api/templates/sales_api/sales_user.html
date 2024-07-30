@@ -25,14 +25,14 @@
   </div>
 
   <!-- Log out Confirmation -->
-  <div id="modal-js" class="modal is-active">
+  <div id="modal-js" class="modal">
     <div class="modal-background"></div>
     <div class="modal-content box">
         <p class="subtitle has-text-centered">Do you want to log out ?</p>
         <form class="field is-grouped" action="{% url 'logout' %}" method="post">
           {% csrf_token %}
-          <button type="submit" class="button is-success is-responsive is-fullwidth">Yes</button>
-          <button type="button" class="button is-danger is-responsive is-fullwidth" aria-label="close">Cancel</button>
+          <button type="submit" class="button is-success is-fullwidth">Yes</button>
+          <button type="button" class="button is-danger is-fullwidth" aria-label="close">Cancel</button>
         </form>
     </div>
   </div>
