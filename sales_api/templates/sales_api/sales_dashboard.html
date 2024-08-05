@@ -16,7 +16,29 @@
         </span>
       </div>
       <div class="level-right">
-        <p class="is-size-4">{{ month_name }} - {{ current_year }}</p>
+
+        <!-- Date Select -->
+        <form method="POST" action="{% url 'sales_api:dashboard' %}" id="dashform">
+          {% csrf_token %}
+        </form>
+        <div class="field has-addons">
+          <div class="control">
+            <div class="select">
+              <select name="months" form="dashform">
+                {% for item in month %}
+                  <option value="{{ item }}" {% if item == month_name %} selected {% endif %}>{{ item }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="control">
+            <input name="year" class="input" type="number" min="1000" max="9999" value="{{ year_select }}" form="dashform">
+          </div>
+          <div class="control">
+            <button class="button" type="submit" form="dashform">Search</button>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -96,7 +118,7 @@
   <script>
     // Define chartData variable
     let month_name = "{{ month_name }}";
-    let current_year = "{{ current_year }}";
+    let current_year = "{{ year_select }}";
 
     let bar_labels = {{ bar_data.labels|safe }};
     let bar_counts = {{ bar_data.counts|safe }};

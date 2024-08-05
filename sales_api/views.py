@@ -32,41 +32,63 @@ def profile_view(request):
 # Dashboard
 @login_required
 def SalesDashboard(request):
+    month = list(calendar.month_name)
     current_month = now().month
-    previous_month = now().month - 1
+    month_name_to_number = {month: index for index, month in enumerate(calendar.month_name) if month}
+    month_select = request.POST.get('months', calendar.month_name[current_month])
+    month_select_val = month_name_to_number.get(month_select, current_month)
+
     current_year = now().year
-    previous_year = now().year - 1
+    year_select = request.POST.get('year', current_year)
+
+    previous_month = month_select_val - 1
+    previous_year = year_select - 1 if month_select_val == 1 else year_select
     
-    monthly_purchases = Sale.objects.filter(sale_date__month = current_month, sale_date__year = current_year).count()
-    current_sales = Sale.objects.filter(sale_date__month = current_month, sale_date__year = current_year).aggregate(total = Sum('total_price'))['total']
-    previous_sales = Sale.objects.filter(sale_date__month = 12 if current_month == 1 else previous_month, sale_date__year = previous_year if current_month == 1 else current_year).aggregate(total = Sum('total_price'))['total']
-    diff_sales = ((current_sales - previous_sales) / ((current_sales + previous_sales) / 2)) * 100
+    # Common filter
+    sales_filter = {'sale_date__month': month_select_val, 'sale_date__year': year_select}
+    
+    monthly_purchases = Sale.objects.filter(**sales_filter).count()
+    current_sales = Sale.objects.filter(**sales_filter).aggregate(total=Sum('total_price'))['total'] or 0
+    previous_sales = Sale.objects.filter(
+        sale_date__month=12 if month_select_val == 1 else previous_month,
+        sale_date__year=previous_year
+    ).aggregate(total=Sum('total_price'))['total'] or 0
+
+    # Calculate sales difference
+    diff_sales = (
+        ((current_sales - previous_sales) / ((current_sales + previous_sales) / 2)) * 100 
+        if (current_sales + previous_sales) != 0 else 0
+    )
+    
     total_item = Product.objects.count()
     total_cust = Customer.objects.count()
 
     # Bar chart data
-    top_sales = Sale.objects.filter(sale_date__month=current_month, sale_date__year=current_year).values('product__name').annotate(total_quantity=Sum('quantity')).order_by('-total_quantity')
+    top_sales = Sale.objects.filter(**sales_filter).values('product__name').annotate(total_quantity=Sum('quantity')).order_by('-total_quantity')
     bar_data = {
         'labels': [item['product__name'] for item in top_sales],
         'counts': [item['total_quantity'] for item in top_sales],
     }
     
     # Pie chart data
-    product_sales = Sale.objects.filter(sale_date__month=current_month, sale_date__year=current_year).values('product__name').annotate(total_price=Sum('total_price'))
+    product_sales = Sale.objects.filter(**sales_filter).values('product__name').annotate(total_price=Sum('total_price'))
     pie_data = {
         'labels': [item['product__name'] for item in product_sales],
         'counts': [float(item['total_price']) for item in product_sales],
     }
 
-    month_current_year = Sale.objects.filter(sale_date__year=current_year).annotate(month=ExtractMonth('sale_date')).values('month').annotate(total_sales=Sum('total_price')).order_by('month')
+    # Line chart data for sales by month
+    month_current_year = Sale.objects.filter(sale_date__year=year_select).annotate(month=ExtractMonth('sale_date')).values('month').annotate(total_sales=Sum('total_price')).order_by('month')
     line_data = {
         'labels': [calendar.month_name[item['month']] for item in month_current_year],
         'counts': [float(item['total_sales']) for item in month_current_year], 
     }
 
     context = {
-        'month_name': calendar.month_name[current_month],
+        'month': month[1:],  # Exclude the empty string at index 0
+        'month_name': month_select,
         'current_year': current_year,
+        'year_select': year_select,
         
         'current_sales': current_sales,
         'diff_sales': diff_sales,
@@ -81,10 +103,6 @@ def SalesDashboard(request):
     }
 
     return render(request, 'sales_api/sales_dashboard.html', context)
-
-# Report
-def SalesReport(request):
-    return render(request,'sales_api/sales_report.html')
 
 # Table
 class SalesSale(LoginRequiredMixin, ListView):

@@ -107,14 +107,6 @@
                     </span>
                   </a>
                 </li>
-                <li>
-                  <a class="{% if request.resolver_match.url_name == 'report' %}is-active{% else %}is-floating-x{% endif %}" href="{% url 'sales_api:report' %}">
-                    <span class="icon-text">
-                      <span class="icon"><i class="fa-regular fa-file-lines {% if request.resolver_match.url_name == 'report' %}fa-flip{% endif %}"></i></span>
-                      <span>Report</span>
-                    </span>
-                  </a>
-                </li>
               </ul>
               <p class="menu-label">Database</p>
               <ul class="menu-list">
