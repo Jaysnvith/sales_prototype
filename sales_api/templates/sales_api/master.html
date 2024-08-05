@@ -67,11 +67,8 @@
           </div>
           <div class="navbar-end">
             <div class="navbar-item has-dropdown is-hoverable">
-              <div class="navbar-link is-arrowless">
+              <div class="navbar-link">
                 Welcome, {{ user.username }}
-                <figure class="image is-24x24 is-hidden-touch ml-2">
-                  <img class="is-rounded" src="{% static 'sales_api/img/user.png' %}" alt="User Pic"/>
-                </figure>
               </div>
               <div class="navbar-dropdown">
                 <a class="navbar-item {% if request.resolver_match.url_name == 'user' %}is-active{% endif %}" href="{% url 'sales_api:user' %}">Profile</a>
