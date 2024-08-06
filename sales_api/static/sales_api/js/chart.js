@@ -29,6 +29,13 @@ var barChart = new Chart(document.getElementById('barDash'), {
         display: false,
       }
     },
+    scales: {
+      x: {
+        ticks: {
+          stepSize: 1
+        },
+      }
+    },
   },
 });
 
