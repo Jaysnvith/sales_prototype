@@ -7,7 +7,7 @@ urlpatterns = [
 
     path("dashboard/", views.SalesDashboard, name="dashboard"),
     path("product/", views.SalesProduct.as_view(), name="product"),
-    path("order/", views.SalesSale.as_view(), name="sale"),
+    path("sale/", views.SalesSale.as_view(), name="sale"),
     path("customer/", views.SalesCustomer.as_view(), name="customer"),
     
     path("product/add/", views.ProductCreate.as_view(), name="productadd"),
