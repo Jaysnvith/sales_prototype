@@ -1,6 +1,6 @@
 import calendar
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.utils.timezone import now
@@ -104,21 +104,42 @@ def SalesDashboard(request):
 
     return render(request, 'sales_api/sales_dashboard.html', context)
 
+class DeleteMixin:
+    model = None
+
+    def post(self, request, *args, **kwargs):
+        item_id = request.POST.get('itemId')
+        item = get_object_or_404(self.model, id=item_id)
+        item.delete()
+        return redirect(self.get_success_url())
+
+    def get_success_url(self):
+        return '/'  # Replace with the URL to redirect after deletion
+
 # Table
-class SalesSale(LoginRequiredMixin, ListView):
+class SalesSale(LoginRequiredMixin, DeleteMixin, ListView):
     model = Sale
     template_name = "sales_api/sales_sale.html"
     context_object_name = "sale_list"
 
-class SalesProduct(LoginRequiredMixin, ListView):
+    def get_success_url(self):
+        return '/sales/sale/'
+
+class SalesProduct(LoginRequiredMixin, DeleteMixin, ListView):
     model = Product
     template_name = "sales_api/sales_product.html"
     context_object_name = "products_list"
 
-class SalesCustomer(LoginRequiredMixin, ListView):
+    def get_success_url(self):
+        return '/sales/product/'
+
+class SalesCustomer(LoginRequiredMixin, DeleteMixin, ListView):
     model = Customer
     template_name = "sales_api/sales_customer.html"
     context_object_name = "customers_list"
+
+    def get_success_url(self):
+        return '/sales/customer/'
 
 # Create
 class SaleCreate (LoginRequiredMixin, CreateView):
@@ -156,20 +177,4 @@ class CustomerUpdate (LoginRequiredMixin, UpdateView):
     model = Customer
     form_class = CustomerForm
     template_name ="sales_api/sales_update.html"
-    success_url = reverse_lazy("sales_api:customer")
-    
-# Delete
-class SaleDelete (LoginRequiredMixin, DeleteView):
-    model = Sale
-    template_name ="sales_api/sales_delete.html"
-    success_url = reverse_lazy("sales_api:sale")
-
-class ProductDelete (LoginRequiredMixin, DeleteView):
-    model = Product
-    template_name ="sales_api/sales_delete.html"
-    success_url = reverse_lazy("sales_api:product")
-    
-class CustomerDelete (LoginRequiredMixin, DeleteView):
-    model = Customer
-    template_name ="sales_api/sales_delete.html"
     success_url = reverse_lazy("sales_api:customer")
