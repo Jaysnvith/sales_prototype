@@ -12,18 +12,17 @@ class UserForm(forms.ModelForm):
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['password'].widget.attrs['disabled'] = 'disabled'
         self.helper = FormHelper(self)
         self.helper.form_id = 'data'
         self.helper.form_method = 'post'
         self.helper.layout = Layout(
-            Field('username'),
-            Field('password'),
+            Field ('username'),
+            Field ('password', readonly='true'),
             Div (
-                HTML('Raw passwords are not stored, click here if you want to <a class="is-colorized" href="{% url "password_change" %}">change password</a>'),
+                HTML ('Raw passwords are not stored, therefore unviewable. Click here if you want to <a class="is-colorized" href="{% url "password_change" %}">change password</a>'),
                 css_class='is-size-7'
             ),
-            HTML('<hr>'),
+            HTML ('<hr>'),
             Div (
                 Div (
                     Field('first_name'),
