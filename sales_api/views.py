@@ -1,7 +1,7 @@
 import calendar
 
 from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, CreateView, UpdateView
 from django.urls import reverse_lazy
 from django.utils.timezone import now
 from django.contrib.auth.decorators import login_required
@@ -64,7 +64,7 @@ def SalesDashboard(request):
     total_cust = Customer.objects.count()
 
     # Bar chart data
-    top_sales = Sale.objects.filter(**sales_filter).values('product__name').annotate(total_quantity=Sum('quantity')).order_by('-total_quantity')
+    top_sales = Sale.objects.filter(**sales_filter).values('product__name').annotate(total_quantity=Sum('quantity')).order_by('-total_quantity')[:5]
     bar_data = {
         'labels': [item['product__name'] for item in top_sales],
         'counts': [item['total_quantity'] for item in top_sales],

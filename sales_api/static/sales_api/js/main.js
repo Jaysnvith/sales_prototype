@@ -93,4 +93,9 @@ $(document).ready(function() {
     }
   });
 
+
+  $('#month-input, #year-input').change(function() {
+    $('#dash-form').submit(); // Submit the form when the selection changes
+  });
+  
 });

@@ -18,13 +18,13 @@
       <div class="level-right">
 
         <!-- Date Select -->
-        <form method="POST" action="{% url 'sales_api:dashboard' %}" id="dashform">
+        <form method="POST" action="{% url 'sales_api:dashboard' %}" id="dash-form">
           {% csrf_token %}
         </form>
         <div class="field has-addons">
           <div class="control">
             <div class="select">
-              <select name="months" form="dashform">
+              <select name="months" id="month-input" form="dash-form">
                 {% for item in month %}
                   <option value="{{ item }}" {% if item == month_name %} selected {% endif %}>{{ item }}</option>
                 {% endfor %}
@@ -32,10 +32,7 @@
             </div>
           </div>
           <div class="control">
-            <input name="year" class="input" type="number" min="1000" max="9999" value="{{ year_select }}" form="dashform">
-          </div>
-          <div class="control">
-            <button class="button" type="submit" form="dashform">Search</button>
+            <input name="year" id="year-input" class="input" type="number" min="1000" max="9999" value="{{ year_select }}" form="dash-form">
           </div>
         </div>
 
