@@ -1,8 +1,19 @@
 $(document).ready(function() {
 
   // NAVIGATION BURGER
-  $(".navbar-burger").click(function() {
-    $(".navbar-burger, .navbar-menu").toggleClass("is-active");
+  $('.navbar-burger').click(function() {
+    $(this).toggleClass('is-active');
+
+    var $menu = $('.navbar-menu');
+    if ($menu.hasClass('is-active')) {
+        $menu.slideUp(300, function() {
+            $menu.removeClass('is-active');
+        });
+    } else {
+        $menu.slideDown(300, function() {
+            $menu.addClass('is-active');
+        });
+    }
   });
 
 
@@ -51,25 +62,35 @@ $(document).ready(function() {
 
 
   // MODAL
-  // Delete Modal
-  $(".modal-button").click(function() {
-    const dataId = $(this).data("id");
-    const dataName = $(this).data("name");
+  $(".modal-content, .modal-background").hide();
 
-    $('#modal-js').addClass('is-active');
+  function openModal(dataId, dataName) {
     $('#itemName').text(dataName);
     $('#itemId').val(dataId);
+    
+    $('#modal-js').addClass('is-active');
+    $(".modal-background").fadeIn(250);
+    $(".modal-content").fadeIn(400);
+  }
+
+  function closeModal() {
+    $(".modal-background").fadeOut(250);
+    $(".modal-content").fadeOut(400, function() {
+      $('.modal').removeClass('is-active');
+    });
+  }
+
+  // Modal Open
+  $(".modal-button").click(function() {
+    openModal($(this).data("id"), $(this).data("name"));
   });
 
   // Modal Close
-  $('.modal-background, .modal-content .button').click(function() {
-    $(".modal").removeClass("is-active");
-  });
-
-  $(document).on( "keydown", function(n) {
-    if(n.key === "Escape") {
-      $('.modal').removeClass('is-active');
+  $('.modal-background, .modal-content .button').click(closeModal);
+  $(document).on("keydown", function(event) {
+    if (event.key === "Escape") {
+      closeModal();
     }
   });
-  
+
 });
