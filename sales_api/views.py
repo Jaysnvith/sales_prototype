@@ -32,14 +32,14 @@ def profile_view(request):
 # Dashboard
 @login_required
 def SalesDashboard(request):
-    month = list(calendar.month_name)
+    month = list(calendar.month_name)[1:]  # Exclude the empty string at index 0
     current_month = now().month
     month_name_to_number = {month: index for index, month in enumerate(calendar.month_name) if month}
     month_select = request.POST.get('months', calendar.month_name[current_month])
     month_select_val = month_name_to_number.get(month_select, current_month)
 
     current_year = now().year
-    year_select = request.POST.get('year', current_year)
+    year_select = int(request.POST.get('year', current_year))
 
     previous_month = month_select_val - 1
     previous_year = year_select - 1 if month_select_val == 1 else year_select
@@ -47,12 +47,16 @@ def SalesDashboard(request):
     # Common filter
     sales_filter = {'sale_date__month': month_select_val, 'sale_date__year': year_select}
     
+    # Monthly sales calculations
     monthly_purchases = Sale.objects.filter(**sales_filter).count()
     current_sales = Sale.objects.filter(**sales_filter).aggregate(total=Sum('total_price'))['total'] or 0
-    previous_sales = Sale.objects.filter(
-        sale_date__month=12 if month_select_val == 1 else previous_month,
-        sale_date__year=previous_year
-    ).aggregate(total=Sum('total_price'))['total'] or 0
+    
+    # Filter for previous month's sales
+    previous_sales_filter = {
+        'sale_date__month': 12 if month_select_val == 1 else previous_month,
+        'sale_date__year': previous_year
+    }
+    previous_sales = Sale.objects.filter(**previous_sales_filter).aggregate(total=Sum('total_price'))['total'] or 0
 
     # Calculate sales difference
     diff_sales = (
@@ -85,7 +89,7 @@ def SalesDashboard(request):
     }
 
     context = {
-        'month': month[1:],  # Exclude the empty string at index 0
+        'month': month,  # List of month names
         'month_name': month_select,
         'current_year': current_year,
         'year_select': year_select,
