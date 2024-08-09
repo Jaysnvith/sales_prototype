@@ -1,5 +1,4 @@
 import calendar
-
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, CreateView, UpdateView
 from django.urls import reverse_lazy
@@ -89,18 +88,15 @@ def SalesDashboard(request):
     }
 
     context = {
-        'month': month,  # List of month names
+        'month': month,
         'month_name': month_select,
         'current_year': current_year,
         'year_select': year_select,
-        
         'current_sales': current_sales,
         'diff_sales': diff_sales,
         'monthly_purchases': monthly_purchases,
-        
         'total_item': total_item,
         'total_cust': total_cust,
-        
         'bar_data': bar_data,
         'pie_data': pie_data,
         'line_data': line_data,
@@ -146,39 +142,39 @@ class SalesCustomer(LoginRequiredMixin, DeleteMixin, ListView):
         return '/sales/customer/'
 
 # Create
-class SaleCreate (LoginRequiredMixin, CreateView):
+class SaleCreate(LoginRequiredMixin, CreateView):
     model = Sale
     form_class = SaleForm
-    template_name ="sales_api/sales_update.html"
+    template_name = "sales_api/sales_update.html"
     success_url = reverse_lazy("sales_api:sale")
 
-class ProductCreate (LoginRequiredMixin, CreateView):
+class ProductCreate(LoginRequiredMixin, CreateView):
     model = Product
     form_class = ProductForm
-    template_name ="sales_api/sales_update.html"
-    success_url = reverse_lazy("sales_api:product")  # Example reverse URL name
+    template_name = "sales_api/sales_update.html"
+    success_url = reverse_lazy("sales_api:product")
 
-class CustomerCreate (LoginRequiredMixin, CreateView):
+class CustomerCreate(LoginRequiredMixin, CreateView):
     model = Customer
     form_class = CustomerForm
-    template_name ="sales_api/sales_update.html"
+    template_name = "sales_api/sales_update.html"
     success_url = reverse_lazy("sales_api:customer")
 
 # Update
-class SaleUpdate (LoginRequiredMixin, UpdateView):
+class SaleUpdate(LoginRequiredMixin, UpdateView):
     model = Sale
     form_class = SaleForm
-    template_name ="sales_api/sales_update.html"
+    template_name = "sales_api/sales_update.html"
     success_url = reverse_lazy("sales_api:sale")
 
-class ProductUpdate (LoginRequiredMixin, UpdateView):
+class ProductUpdate(LoginRequiredMixin, UpdateView):
     model = Product
     form_class = ProductForm
-    template_name ="sales_api/sales_update.html"
+    template_name = "sales_api/sales_update.html"
     success_url = reverse_lazy("sales_api:product")
 
-class CustomerUpdate (LoginRequiredMixin, UpdateView):
+class CustomerUpdate(LoginRequiredMixin, UpdateView):
     model = Customer
     form_class = CustomerForm
-    template_name ="sales_api/sales_update.html"
+    template_name = "sales_api/sales_update.html"
     success_url = reverse_lazy("sales_api:customer")
