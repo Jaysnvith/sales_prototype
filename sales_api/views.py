@@ -1,5 +1,7 @@
 import calendar
+import io
 
+from django.http import FileResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils.timezone import now
@@ -9,6 +11,7 @@ from django.views.generic import ListView, CreateView, UpdateView
 
 from .models import Sale, Product, Customer
 from .forms import UserForm, SaleForm, ProductForm, CustomerForm
+from reportlab.pdfgen import canvas
 
 from .services import SalesData, ChartData
 
@@ -32,11 +35,12 @@ def profile_view(request):
 # Dashboard
 @login_required
 def SalesDashboard(request):
-    month = list(calendar.month_name)[1:]  # Exclude the empty string at index 0
+    months = list(calendar.month_name)[1:]  # Exclude the empty string at index 0
     current_month = now().month
     month_name_to_number = {month: index for index, month in enumerate(calendar.month_name) if month}
     month_select = request.POST.get('months', calendar.month_name[current_month])
     month_select_val = month_name_to_number.get(month_select, current_month)
+    
     current_year = now().year
     year_select = int(request.POST.get('year', current_year))
     
@@ -52,19 +56,23 @@ def SalesDashboard(request):
     line_data = chart_data.get_sales_by_month()
 
     context = {
-        'month': month,
-        'month_name': month_select,
+        'month': months,
+        'month_select': month_select,
         'current_year': current_year,
         'year_select': year_select,
-        'current_sales': current_income_sum,
-        'diff_sales': income_diff,
-        'monthly_purchases': current_purchases_sum,
+        'current_purchases_sum': current_purchases_sum,
+        'current_income_sum': current_income_sum,
+        'income_diff': income_diff,
         'total_item': total_item,
         'total_cust': total_cust,
         'bar_data': bar_data,
         'pie_data': pie_data,
         'line_data': line_data,
     }
+
+    # Check if the PDF should be generated
+    if request.method == 'POST' and 'generate_pdf' in request.POST:
+        return ReportPDF(request, current_income_sum, current_purchases_sum, total_item, total_cust)
     
     return render(request, 'sales_api/sales_dashboard.html', context)
 
@@ -142,3 +150,27 @@ class CustomerUpdate(LoginRequiredMixin, UpdateView):
     form_class = CustomerForm
     template_name = "sales_api/sales_update.html"
     success_url = reverse_lazy("sales_api:customer")
+
+# Generate PDF
+def ReportPDF(request, current_sales, monthly_purchases, total_item, total_cust):
+    # Create a file-like buffer to receive PDF data.
+    buffer = io.BytesIO()
+
+    # Create the PDF object, using the buffer as its "file."
+    p = canvas.Canvas(buffer)
+
+    # Draw data on the PDF
+    p.drawString(100, 750, "Sales Report")
+    p.drawString(100, 730, f"Current Sales: {current_sales}")
+    p.drawString(100, 710, f"Monthly Purchases: {monthly_purchases}")
+    p.drawString(100, 690, f"Total Items: {total_item}")
+    p.drawString(100, 670, f"Total Customers: {total_cust}")
+
+    # Close the PDF object cleanly, and we're done.
+    p.showPage()
+    p.save()
+
+    # FileResponse sets the Content-Disposition header so that browsers
+    # present the option to save the file.
+    buffer.seek(0)
+    return FileResponse(buffer, as_attachment=True, filename="sales_report.pdf")
