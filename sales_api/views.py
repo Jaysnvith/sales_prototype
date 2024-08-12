@@ -1,7 +1,5 @@
 import calendar
-import io
 
-from django.http import FileResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils.timezone import now
@@ -11,7 +9,6 @@ from django.views.generic import ListView, CreateView, UpdateView
 
 from .models import Sale, Product, Customer
 from .forms import UserForm, SaleForm, ProductForm, CustomerForm
-from reportlab.pdfgen import canvas
 
 from .services import SalesData, ChartData
 
