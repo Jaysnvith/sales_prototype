@@ -16,6 +16,9 @@
         </span>
       </div>
       <div class="level-right">
+        
+        <!-- Export PDF -->
+        <button class="button" type="submit" name="generate_pdf" form='dash-form'>Export</button>
 
         <!-- Date Select -->
         <form method="POST" action="{% url 'sales_api:dashboard' %}" id="dash-form">
@@ -26,7 +29,7 @@
             <div class="select">
               <select name="months" id="month-input" form="dash-form">
                 {% for item in month %}
-                  <option value="{{ item }}" {% if item == month_name %} selected {% endif %}>{{ item }}</option>
+                  <option value="{{ item }}" {% if item == month_select %} selected {% endif %}>{{ item }}</option>
                 {% endfor %}
               </select>
             </div>
@@ -74,20 +77,20 @@
         <div class="card-content">
           <nav class="level">
             <div class="level-item">
-              <p class="is-size-3 has-text-weight-bold">${{ current_sales|safe|intcomma }}</p>
+              <p class="is-size-3 has-text-weight-bold">${{ current_income_sum|safe|intcomma }}</p>
             </div>
             <div class="level-item">
-              <span class="icon-text is-size-5 {% if diff_sales < 0 %} has-text-danger">
+              <span class="icon-text is-size-5 {% if income_diff < 0 %} has-text-danger">
                 <span class="icon"><i class="fa-solid fa-arrow-down fa-xs fa-beat"></i></span>
               {% else %} has-text-success">
                 <span class="icon"><i class="fa-solid fa-arrow-up fa-xs fa-beat"></i></span>
               {% endif %}
-                <span>{{ diff_sales|safe|floatformat }}%</span>
+                <span>{{ income_diff|safe|floatformat }}%</span>
               </span>
             </div>
           </nav>
           <a class="is-colorized" href="{% url 'sales_api:sale' %}">
-            <p class="is-size-3 has-text-centered">{{ monthly_purchases|safe }} Purchases</p>
+            <p class="is-size-3 has-text-centered">{{ current_purchases_sum|safe }} Purchases</p>
           </a>
         </div>
       </div>
@@ -114,7 +117,7 @@
   <!-- JavaScript for Charts -->
   <script>
     // Define chartData variable
-    let month_name = "{{ month_name }}";
+    let month_name = "{{ month_select }}";
     let current_year = "{{ year_select }}";
 
     let bar_labels = {{ bar_data.labels|safe }};

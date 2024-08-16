@@ -1,16 +1,15 @@
 import calendar
 
 from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import ListView, CreateView, UpdateView
 from django.urls import reverse_lazy
 from django.utils.timezone import now
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Sum
-from django.db.models.functions import ExtractMonth
+from django.views.generic import ListView, CreateView, UpdateView
 
 from .models import Sale, Product, Customer
 from .forms import UserForm, SaleForm, ProductForm, CustomerForm
+from .services import SalesData, ChartData, SalesReportGenerator
 
 def is_member(user):
     return user.groups.filter(name='Staff').exists()
@@ -32,80 +31,54 @@ def profile_view(request):
 # Dashboard
 @login_required
 def SalesDashboard(request):
-    month = list(calendar.month_name)[1:]  # Exclude the empty string at index 0
+    months = list(calendar.month_name)[1:]  # Exclude the empty string at index 0
     current_month = now().month
-    month_name_to_number = {month: index for index, month in enumerate(calendar.month_name) if month}
+    current_year = now().year
+
+    # Mapping month name to its number
+    month_name_to_number = {month: index for index, month in enumerate(months, start=1)}
+
+    # Get selected month and year from POST data
     month_select = request.POST.get('months', calendar.month_name[current_month])
     month_select_val = month_name_to_number.get(month_select, current_month)
-
-    current_year = now().year
     year_select = int(request.POST.get('year', current_year))
-
-    previous_month = month_select_val - 1
-    previous_year = year_select - 1 if month_select_val == 1 else year_select
     
-    # Common filter
-    sales_filter = {'sale_date__month': month_select_val, 'sale_date__year': year_select}
+    # Retrieve sales data
+    sales_data = SalesData(month_select_val, year_select)
+    current_income_sum, current_purchases_sum, income_diff = sales_data.get_monthly_sales()
     
-    # Monthly sales calculations
-    monthly_purchases = Sale.objects.filter(**sales_filter).count()
-    current_sales = Sale.objects.filter(**sales_filter).aggregate(total=Sum('total_price'))['total'] or 0
-    
-    # Filter for previous month's sales
-    previous_sales_filter = {
-        'sale_date__month': 12 if month_select_val == 1 else previous_month,
-        'sale_date__year': previous_year
-    }
-    previous_sales = Sale.objects.filter(**previous_sales_filter).aggregate(total=Sum('total_price'))['total'] or 0
-
-    # Calculate sales difference
-    diff_sales = (
-        ((current_sales - previous_sales) / ((current_sales + previous_sales) / 2)) * 100 
-        if (current_sales + previous_sales) != 0 else 0
-    )
-    
+    # Count total items and customers
     total_item = Product.objects.count()
     total_cust = Customer.objects.count()
 
-    # Bar chart data
-    top_sales = Sale.objects.filter(**sales_filter).values('product__name').annotate(total_quantity=Sum('quantity')).order_by('-total_quantity')[:5]
-    bar_data = {
-        'labels': [item['product__name'] for item in top_sales],
-        'counts': [item['total_quantity'] for item in top_sales],
-    }
+    # Retrieve chart data
+    chart_data = ChartData(month_select_val, year_select)
+    bar_data = chart_data.get_top_sales()
+    pie_data = chart_data.get_product_sales()
+    line_data = chart_data.get_sales_by_month()
+
     
-    # Pie chart data
-    product_sales = Sale.objects.filter(**sales_filter).values('product__name').annotate(total_price=Sum('total_price'))
-    pie_data = {
-        'labels': [item['product__name'] for item in product_sales],
-        'counts': [float(item['total_price']) for item in product_sales],
-    }
-
-    # Line chart data for sales by month
-    month_current_year = Sale.objects.filter(sale_date__year=year_select).annotate(month=ExtractMonth('sale_date')).values('month').annotate(total_sales=Sum('total_price')).order_by('month')
-    line_data = {
-        'labels': [calendar.month_name[item['month']] for item in month_current_year],
-        'counts': [float(item['total_sales']) for item in month_current_year], 
-    }
-
+    if request.method == 'POST' and 'generate_pdf' in request.POST:
+        report_generator = SalesReportGenerator(month_select, year_select, pie_data)
+        response = report_generator.generate()
+        return response
+        
+    
     context = {
-        'month': month,  # List of month names
-        'month_name': month_select,
+        'month': months,
+        'month_select': month_select,
         'current_year': current_year,
         'year_select': year_select,
-        
-        'current_sales': current_sales,
-        'diff_sales': diff_sales,
-        'monthly_purchases': monthly_purchases,
-        
+        'current_purchases_sum': current_purchases_sum,
+        'current_income_sum': current_income_sum,
+        'income_diff': income_diff,
         'total_item': total_item,
         'total_cust': total_cust,
-        
         'bar_data': bar_data,
         'pie_data': pie_data,
         'line_data': line_data,
     }
-
+    
     return render(request, 'sales_api/sales_dashboard.html', context)
 
 class DeleteMixin:
@@ -146,39 +119,39 @@ class SalesCustomer(LoginRequiredMixin, DeleteMixin, ListView):
         return '/sales/customer/'
 
 # Create
-class SaleCreate (LoginRequiredMixin, CreateView):
+class SaleCreate(LoginRequiredMixin, CreateView):
     model = Sale
     form_class = SaleForm
-    template_name ="sales_api/sales_update.html"
+    template_name = "sales_api/sales_update.html"
     success_url = reverse_lazy("sales_api:sale")
 
-class ProductCreate (LoginRequiredMixin, CreateView):
+class ProductCreate(LoginRequiredMixin, CreateView):
     model = Product
     form_class = ProductForm
-    template_name ="sales_api/sales_update.html"
-    success_url = reverse_lazy("sales_api:product")  # Example reverse URL name
+    template_name = "sales_api/sales_update.html"
+    success_url = reverse_lazy("sales_api:product")
 
-class CustomerCreate (LoginRequiredMixin, CreateView):
+class CustomerCreate(LoginRequiredMixin, CreateView):
     model = Customer
     form_class = CustomerForm
-    template_name ="sales_api/sales_update.html"
+    template_name = "sales_api/sales_update.html"
     success_url = reverse_lazy("sales_api:customer")
 
 # Update
-class SaleUpdate (LoginRequiredMixin, UpdateView):
+class SaleUpdate(LoginRequiredMixin, UpdateView):
     model = Sale
     form_class = SaleForm
-    template_name ="sales_api/sales_update.html"
+    template_name = "sales_api/sales_update.html"
     success_url = reverse_lazy("sales_api:sale")
 
-class ProductUpdate (LoginRequiredMixin, UpdateView):
+class ProductUpdate(LoginRequiredMixin, UpdateView):
     model = Product
     form_class = ProductForm
-    template_name ="sales_api/sales_update.html"
+    template_name = "sales_api/sales_update.html"
     success_url = reverse_lazy("sales_api:product")
 
-class CustomerUpdate (LoginRequiredMixin, UpdateView):
+class CustomerUpdate(LoginRequiredMixin, UpdateView):
     model = Customer
     form_class = CustomerForm
-    template_name ="sales_api/sales_update.html"
+    template_name = "sales_api/sales_update.html"
     success_url = reverse_lazy("sales_api:customer")
