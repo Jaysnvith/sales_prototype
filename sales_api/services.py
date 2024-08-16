@@ -46,7 +46,7 @@ class ChartData:
         }
 
     def get_product_sales(self):
-        sales_income_sum = Sale.objects.filter(sale_date__month=self.month, sale_date__year=self.year).values('product__name').annotate(total_price=Sum('total_price'))
+        sales_income_sum = Sale.objects.filter(sale_date__month=self.month, sale_date__year=self.year).values('product__name').annotate(total_price=Sum('total_price')).order_by('-total_price')
         return {
             'labels': [item['product__name'] for item in sales_income_sum],
             'counts': [float(item['total_price']) for item in sales_income_sum],
