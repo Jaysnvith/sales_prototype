@@ -16,12 +16,9 @@
         </span>
       </div>
       <div class="level-right">
+        
         <!-- Export PDF -->
-        <form method="post">
-          {% csrf_token %}
-          <!-- Other form fields -->
-          <button class="button" type="submit" name="generate_pdf">Export</button>
-        </form>
+        <button class="button" type="submit" name="generate_pdf" form='dash-form'>Export</button>
 
         <!-- Date Select -->
         <form method="POST" action="{% url 'sales_api:dashboard' %}" id="dash-form">
