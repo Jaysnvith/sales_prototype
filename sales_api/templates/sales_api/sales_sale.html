@@ -14,7 +14,7 @@
       <span>Sales</span>
     </span>
     <div class="card-header-icon">    
-      <a class="button has-text-weight-bold" {% if user.is_superuser %} href="{% url 'sales_api:saleadd' %}" {% else %} disabled {% endif %}>
+      <a class="button has-text-weight-bold is-success" {% if user.is_superuser %} href="{% url 'sales_api:saleadd' %}" {% else %} disabled {% endif %}>
         <span class="icon-text">
           <span>Add</span>
           <span class="icon"><i class="fas fa-plus"></i></span>
@@ -49,7 +49,7 @@
           <td>
             <div class="field has-addons">
               <p class="control">
-                <a class="button is-small is-success" {% if user.is_superuser %} href="/sales/sale/item_{{ item.id }}" {% else %} disabled {% endif %}>
+                <a class="button is-small is-info" {% if user.is_superuser %} href="/sales/sale/item_{{ item.id }}" {% else %} disabled {% endif %}>
                   <i class="fa-solid fa-pen-to-square"></i>
                 </a>
               </p>
