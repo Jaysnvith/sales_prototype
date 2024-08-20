@@ -64,11 +64,11 @@ $(document).ready(function() {
   // MODAL
   $(".modal-content, .modal-background").hide();
 
-  function openModal(dataId, dataName) {
+  function openModal(dataId, dataItemId, dataName) {
     $('#itemName').text(dataName);
-    $('#itemId').val(dataId);
+    $('#itemId').val(dataItemId);
     
-    $('#modal-js').addClass('is-active');
+    $('#'+dataId).addClass('is-active');
     $(".modal-background").fadeIn(250);
     $(".modal-content").fadeIn(400);
   }
@@ -82,7 +82,7 @@ $(document).ready(function() {
 
   // Modal Open
   $(".modal-button").click(function() {
-    openModal($(this).data("id"), $(this).data("name"));
+    openModal($(this).data("id"), $(this).data("itemid"), $(this).data("name"));
   });
 
   // Modal Close
@@ -98,4 +98,13 @@ $(document).ready(function() {
     $('#dash-form').submit(); // Submit the form when the selection changes
   });
   
+  // Notification
+  $('.notification .delete').each(function() {
+    var $delete = $(this);
+    var $notification = $delete.parent();
+
+    $delete.on('click', function() {
+      $notification.remove();
+    });
+  });
 });
