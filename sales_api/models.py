@@ -13,18 +13,25 @@ class Customer(models.Model):
 
 class Product(models.Model):
     name = models.CharField(max_length=100)
-    description = models.TextField(blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    stock = models.IntegerField(default=0)
 
     def __str__(self):
         return self.name
 
 class Sale(models.Model):
+    CATEGORY_CHOICES = [
+        ('aftermarket', 'Aftermarket'),
+        ('export', 'Export'),
+        ('return', 'Return'),
+    ]
+
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     sale_date = models.DateTimeField(auto_now_add=True)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='aftermarket')
 
     def save(self, *args, **kwargs):
         self.total_price = self.product.price * self.quantity

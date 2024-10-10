@@ -28,20 +28,20 @@
     <table class="table is-size-7 is-hoverable" id="mastertable">
       <thead>
         <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Price</th>
-          <th>Description</th>
+          <th class="has-text-centered">ID</th>
+          <th class="has-text-centered">Name</th>
+          <th class="has-text-centered">Price</th>
+          <th class="has-text-centered">Stock</th>
           <th class="disable-sorting"></th>
         </tr>
       </thead>
       <tbody>
         {% for item in products_list %}
         <tr>
-          <td>{{ item.id }}</td>
-          <td>{{ item.name }}</td>
-          <td>${{ item.price }}</td>
-          <td>{{ item.description }}</td>
+          <td class="has-text-centered">{{ item.id }}</td>
+          <td class="has-text-centered">{{ item.name }}</td>
+          <td class="has-text-centered">${{ item.price }}</td>
+          <td class="has-text-centered">{{ item.stock }}</td>
           <td>
             <div class="field has-addons">
               <p class="control">

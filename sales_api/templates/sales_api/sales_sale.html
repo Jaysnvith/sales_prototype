@@ -28,24 +28,26 @@
     <table class="table is-size-7 is-hoverable" id="mastertable">
       <thead>
         <tr>
-          <th>ID</th>
-          <th>Customer</th>
-          <th>Product</th>
-          <th>Quantity</th>
-          <th>Total Price</th>
-          <th>Sale Date</th>
+          <th class="has-text-centered">ID</th>
+          <th class="has-text-centered">Customer</th>
+          <th class="has-text-centered">Product</th>
+          <th class="has-text-centered">Quantity</th>
+          <th class="has-text-centered">Total Price</th>
+          <th class="has-text-centered">Sale Date</th>
+          <th class="has-text-centered">Category</th>
           <th class="disable-sorting"></th>
         </tr>
       </thead>
       <tbody>
         {% for item in sale_list %}
         <tr>
-          <td>{{ item.id }}</td>
-          <td>{{ item.customer }}</td>
-          <td>{{ item.product }}</td>
-          <td>{{ item.quantity }}</td>
-          <td>${{ item.total_price }}</td>
-          <td>{{ item.sale_date }}</td>
+          <td class="has-text-centered">{{ item.id }}</td>
+          <td class="has-text-centered">{{ item.customer }}</td>
+          <td class="has-text-centered">{{ item.product }}</td>
+          <td class="has-text-centered">{{ item.quantity }}</td>
+          <td class="has-text-centered">${{ item.total_price }}</td>
+          <td class="has-text-centered">{{ item.sale_date }}</td>
+          <td class="has-text-centered">{{ item.category }}</td>
           <td>
             <div class="field has-addons">
               <p class="control">

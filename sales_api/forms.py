@@ -40,7 +40,7 @@ class UserForm(forms.ModelForm):
 class SaleForm(forms.ModelForm):
     class Meta:
         model = Sale
-        fields = ['customer','product','quantity']
+        fields = ['customer','product','quantity','category']
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -48,7 +48,6 @@ class SaleForm(forms.ModelForm):
         self.helper.form_id = 'data'
         self.helper.form_method = 'post'
         self.helper.layout = Layout(
-            Field ('customer'),
             Div (
                 Div (
                     Field('product'),
@@ -59,6 +58,8 @@ class SaleForm(forms.ModelForm):
                 ),
                 css_class='field is-grouped'
             ),
+            Field ('customer'),
+            Field ('category'),
         )
         
 # Products
@@ -84,7 +85,7 @@ class ProductForm(forms.ModelForm):
                 ),
                 css_class='field is-grouped'
             ),
-            Field('description'),
+            Field('stock'),
         )
         
 # Customer
