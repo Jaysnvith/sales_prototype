@@ -23,7 +23,6 @@ class Sale(models.Model):
     CATEGORY_CHOICES = [
         ('aftermarket', 'Aftermarket'),
         ('export', 'Export'),
-        ('return', 'Return'),
     ]
 
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
