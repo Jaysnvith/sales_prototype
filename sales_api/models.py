@@ -3,10 +3,16 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 class Customer(models.Model):
+    REGION_CHOICES = [
+        ('local', 'Local'),
+        ('international', 'International'),
+    ]
+
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
+    region_type = models.CharField(max_length=20, choices=REGION_CHOICES, default='local')
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"

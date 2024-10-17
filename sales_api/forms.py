@@ -113,4 +113,5 @@ class CustomerForm(forms.ModelForm):
             ),
             Field('email'),
             Field('phone_number'),
+            Field('region_type'),
         )
