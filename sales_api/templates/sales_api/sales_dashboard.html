@@ -202,7 +202,7 @@
     <div class="box">
       <p>
         <strong class="title is-5">Total Customers: </strong>
-        {{ kpi.customer.total|safe }}
+        {{ kpi.customers.total|safe }}
       </p>
       <hr>
       <!-- Region Comparison Chart -->
@@ -254,7 +254,6 @@
   let prod_orders_monthly_counts = {{ charts.prod_orders.monthly.counts|safe }};
   let prod_orders_yearly_labels = {{ charts.prod_orders.yearly.labels|safe }};
   let prod_orders_yearly_counts = {{ charts.prod_orders.yearly.counts|safe }};
-
 
   let stock_level_labels = {{ charts.stock_level.labels|safe }};
   let stock_level_counts = {{ charts.stock_level.counts|safe }};
