@@ -1,7 +1,7 @@
 import calendar
 from io import BytesIO
 
-from django.db.models import Sum
+from django.db.models import Sum, Count
 from django.db.models.functions import ExtractMonth
 from django.http import HttpResponse
 
@@ -12,25 +12,60 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, 
 from reportlab.graphics.shapes import Drawing
 from reportlab.graphics.charts.barcharts import VerticalBarChart
 
-from .models import Sale
+from .models import Sale, Customer, Product
 
 # Sales Report
-class SalesData:
+class DescAnalytic:
     def __init__(self, month, year):
         self.month = month
         self.year = year
         self.previous_month = self.month - 1
         self.previous_year = self.year - 1 if month == 1 else self.year
 
-    def get_monthly_sales(self):
-        current_purchases_sum = Sale.objects.filter(sale_date__month=self.month, sale_date__year=self.year).count()
-        current_income_sum = Sale.objects.filter(sale_date__month=self.month, sale_date__year=self.year).aggregate(total=Sum('total_price'))['total'] or 0
-        previous_income_sum = Sale.objects.filter(sale_date__month=12 if self.month == 1 else self.previous_month,sale_date__year=self.previous_year).aggregate(total=Sum('total_price'))['total'] or 0
-        income_diff = (
-            ((current_income_sum - previous_income_sum) / ((current_income_sum + previous_income_sum) / 2)) * 100 
-            if (current_income_sum + previous_income_sum) != 0 else 0
-        )
-        return current_income_sum, current_purchases_sum, income_diff
+    # Calculate total revenue and order count for a specific month and year
+    def _get_totals(self, month, year):
+        revenue_total = round(Sale.objects.filter(sale_date__month=month, sale_date__year=year).aggregate(total=Sum('total_price'))['total'] or 0)
+        order_total = Sale.objects.filter(sale_date__month=month, sale_date__year=year).count()
+        return revenue_total, order_total
+
+    # Calculate growth rate
+    def _get_growth_rate(self, current, previous):
+        if (current + previous) == 0:
+            return 0
+        return ((current - previous) / ((current + previous) / 2)) * 100
+    
+    def monthly_totals(self):
+        curr_revenue_total, curr_order_total = self._get_totals(self.month, self.year)
+        prev_revenue_total, prev_order_total = self._get_totals(12 if self.month == 1 else self.previous_month, self.previous_year)
+
+        revenue_growth_rate = self._get_growth_rate(curr_revenue_total, prev_revenue_total)
+        order_growth_rate = self._get_growth_rate(curr_order_total, prev_order_total)
+
+        return curr_revenue_total, curr_order_total, revenue_growth_rate, order_growth_rate
+    
+    def average_order(self):
+        curr_revenue_total, curr_order_total = self._get_totals(self.month, self.year)
+        prev_revenue_total, prev_order_total = self._get_totals(12 if self.month == 1 else self.previous_month, self.previous_year)
+        
+        curr_aov = round(curr_revenue_total / curr_order_total) if curr_order_total != 0 else 0
+        prev_aov = round(prev_revenue_total / prev_order_total) if prev_order_total != 0 else 0
+        
+        aov_growth_rate = self._get_growth_rate(curr_aov, prev_aov)
+
+        return curr_aov, aov_growth_rate
+    
+    def customer_insight(self):
+        customer_total = Customer.objects.count()
+        
+        return customer_total
+    
+    def product_insight(self):
+        prod_order_monthly = Sale.objects.filter(sale_date__month=self.month, sale_date__year=self.year).aggregate(total=Sum('quantity'))['total'] or 0
+        prod_order_yearly = Sale.objects.filter(sale_date__year=self.year).aggregate(total=Sum('quantity'))['total'] or 0
+        product_total = Product.objects.aggregate(total=Sum('stock'))['total'] or 0
+        product_low = list(Product.objects.filter(stock__lt=20).values('name', 'stock'))
+        
+        return prod_order_monthly, prod_order_yearly, product_total, product_low
 
 # Chart Data
 class ChartData:
@@ -38,29 +73,58 @@ class ChartData:
         self.month = month
         self.year = year
 
-    def get_top_sales(self):
-        sales_quantity_sum = Sale.objects.filter(sale_date__month=self.month, sale_date__year=self.year).values('product__name').annotate(total_quantity=Sum('quantity')).order_by('-total_quantity')[:5]
-        return {
-            'labels': [item['product__name'] for item in sales_quantity_sum],
-            'counts': [item['total_quantity'] for item in sales_quantity_sum],
-        }
-
-    def get_product_sales(self):
-        sales_income_sum = Sale.objects.filter(sale_date__month=self.month, sale_date__year=self.year).values('product__name').annotate(total_price=Sum('total_price')).order_by('-total_price')
-        return {
-            'labels': [item['product__name'] for item in sales_income_sum],
-            'counts': [float(item['total_price']) for item in sales_income_sum],
-        }
-
-    def get_sales_by_month(self):
+    def get_annual_sales(self):
         sales_monthly_sum = Sale.objects.filter(sale_date__year=self.year).annotate(month=ExtractMonth('sale_date')).values('month').annotate(total_sales=Sum('total_price')).order_by('month')
         return {
             'labels': [calendar.month_name[item['month']] for item in sales_monthly_sum],
             'counts': [float(item['total_sales']) for item in sales_monthly_sum],
         }
 
+    def get_prod_orders_monthly(self):
+        sales_top_products = Sale.objects.filter(sale_date__month=self.month, sale_date__year=self.year).values('product__name').annotate(total_quantity=Sum('quantity')).order_by('-total_quantity')
+        return {
+            'labels': [item['product__name'] for item in sales_top_products],
+            'counts': [item['total_quantity'] for item in sales_top_products],
+        }
+    
+    def get_prod_orders_yearly(self):
+        sales_top_products = Sale.objects.filter(sale_date__year=self.year).values('product__name').annotate(total_quantity=Sum('quantity')).order_by('-total_quantity')
+        return {
+            'labels': [item['product__name'] for item in sales_top_products],
+            'counts': [item['total_quantity'] for item in sales_top_products],
+        }
+    
+    def get_product_stock(self):
+        product_stock_level = Product.objects.all().values('name', 'stock').order_by('name')
+        return {
+            'labels': [item['name'] for item in product_stock_level],
+            'counts': [float(item['stock']) for item in product_stock_level],
+        }
+    
+    def get_cust_orders_monthly(self):
+        sales_quantity_sum = Sale.objects.filter(sale_date__month=self.month, sale_date__year=self.year).values('customer__first_name').annotate(total_quantity=Sum('quantity')).order_by('-total_quantity')
+        return {
+            'labels': [item['customer__first_name'] for item in sales_quantity_sum],
+            'counts': [item['total_quantity'] for item in sales_quantity_sum],
+        }
+    
+    def get_cust_orders_yearly(self):
+        sales_quantity_sum = Sale.objects.filter(sale_date__year=self.year).values('customer__first_name').annotate(total_quantity=Sum('quantity')).order_by('-total_quantity')
+        return {
+            'labels': [item['customer__first_name'] for item in sales_quantity_sum],
+            'counts': [item['total_quantity'] for item in sales_quantity_sum],
+        }
+    
+    def get_region_compare(self):
+        cust_region_compare = Customer.objects.values('region_type').annotate(count=Count('id'))
+        return {
+            'labels': [item['region_type'] for item in cust_region_compare],
+            'counts': [item['count'] for item in cust_region_compare],
+        }
+
 # Generate PDF
 class SalesReportGenerator:
+
     def __init__(self, month, year, pie_data):
         self.month = month
         self.year = year

@@ -9,7 +9,7 @@ from django.views.generic import ListView, CreateView, UpdateView
 
 from .models import Sale, Product, Customer
 from .forms import UserForm, SaleForm, ProductForm, CustomerForm
-from .services import SalesData, ChartData, SalesReportGenerator
+from .services import DescAnalytic, ChartData, SalesReportGenerator
 
 def is_member(user):
     return user.groups.filter(name='Staff').exists()
@@ -43,40 +43,76 @@ def SalesDashboard(request):
     month_select_val = month_name_to_number.get(month_select, current_month)
     year_select = int(request.POST.get('year', current_year))
     
-    # Retrieve sales data
-    sales_data = SalesData(month_select_val, year_select)
-    current_income_sum, current_purchases_sum, income_diff = sales_data.get_monthly_sales()
-    
-    # Count total items and customers
-    total_item = Product.objects.count()
-    total_cust = Customer.objects.count()
+    # Sales Order KPI
+    desc_analytic = DescAnalytic(month_select_val, year_select)
+    curr_revenue_total, curr_order_total, revenue_growth_rate, order_growth_rate = desc_analytic.monthly_totals()
+    curr_aov, aov_growth_rate = desc_analytic.average_order()
+    customer_total = desc_analytic.customer_insight()
+    prod_order_monthly, prod_order_yearly, product_total, product_low = desc_analytic.product_insight()
 
     # Retrieve chart data
     chart_data = ChartData(month_select_val, year_select)
-    bar_data = chart_data.get_top_sales()
-    pie_data = chart_data.get_product_sales()
-    line_data = chart_data.get_sales_by_month()
-
+    annual_sales = chart_data.get_annual_sales()
+    prod_orders_monthly = chart_data.get_prod_orders_monthly()
+    prod_orders_yearly = chart_data.get_prod_orders_yearly()
+    stock_level = chart_data.get_product_stock()
+    region_compare = chart_data.get_region_compare()
+    cust_orders_monthly = chart_data.get_cust_orders_monthly()
+    cust_orders_yearly = chart_data.get_cust_orders_yearly()
     
     if request.method == 'POST' and 'generate_pdf' in request.POST:
-        report_generator = SalesReportGenerator(month_select, year_select, pie_data)
+        report_generator = SalesReportGenerator(month_select, year_select, region_compare)
         response = report_generator.generate()
-        return response
-        
+        return response   
     
     context = {
-        'month': months,
-        'month_select': month_select,
-        'current_year': current_year,
-        'year_select': year_select,
-        'current_purchases_sum': current_purchases_sum,
-        'current_income_sum': current_income_sum,
-        'income_diff': income_diff,
-        'total_item': total_item,
-        'total_cust': total_cust,
-        'bar_data': bar_data,
-        'pie_data': pie_data,
-        'line_data': line_data,
+        # Date
+        'date': {
+            'month': months,
+            'month_select': month_select,
+            'current_year': current_year,
+            'year_select': year_select,
+        },
+
+        # KPI
+        'kpi': {
+            'revenue': {
+                'total': curr_revenue_total,
+                'growth_rate': revenue_growth_rate,
+            },
+            'order': {
+                'total': curr_order_total,
+                'growth_rate': order_growth_rate,
+            },
+            'aov': {
+                'total': curr_aov,
+                'growth_rate': aov_growth_rate,
+            },
+            'products': {
+                'monthly': prod_order_monthly,
+                'yearly': prod_order_yearly,
+                'total': product_total,
+                'low': product_low,
+            },
+            'customers': {
+                'total': customer_total,
+            },
+        },
+
+        # Chart
+        'charts': {
+            'annual_sales': annual_sales,
+            'prod_orders': {
+                'monthly':prod_orders_monthly,
+                'yearly': prod_orders_yearly,
+            },
+            'cust_orders': {
+                'monthly': cust_orders_monthly,
+                'yearly': cust_orders_yearly,
+            },
+            'stock_level': stock_level,
+            'region_compare': region_compare,
+        },
     }
     
     return render(request, 'sales_api/sales_dashboard.html', context)

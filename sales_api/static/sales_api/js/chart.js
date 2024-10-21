@@ -5,79 +5,36 @@ var dangerColor = getComputedStyle(root).getPropertyValue('--bulma-danger');
 var successColor = getComputedStyle(root).getPropertyValue('--bulma-success');
 var infoColor = getComputedStyle(root).getPropertyValue('--bulma-info');
 var warningColor = getComputedStyle(root).getPropertyValue('--bulma-warning');
+var colors = [primaryColor, linkColor, dangerColor, successColor, infoColor, warningColor];
 
-// Bar Chart
-var barChart = new Chart(document.getElementById('barDash'), {
-  type: 'bar',
-  data: {
-    labels: bar_labels,
-    datasets: [{
-      data: bar_counts,
-      backgroundColor: linkColor,
-    }]
-  },
-  options: {
-    indexAxis: 'y',
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      title: {
-        display: true,
-        text: "This Month Most Sold Products",
-      },
-      legend: {
-        display: false,
-      }
-    },
-    scales: {
-      x: {
-        ticks: {
-          stepSize: 1
-        },
-      }
-    },
-  },
+document.addEventListener('DOMContentLoaded', function() {
+  // Set data monthly/yearly
+  function setupChartUpdate(buttonId, chart, data, labels, titlePrefix) {
+    document.getElementById(buttonId).addEventListener('click', function() {
+      chart.data.datasets[0].data = data;
+      chart.data.labels = labels;
+      chart.options.plugins.title.text = titlePrefix + (chart === productOrders ? month_name : current_year);
+      chart.update();
+    });
+  }
+
+  // Set product orders
+  setupChartUpdate('updateProdM', productOrders, prod_orders_monthly_counts,prod_orders_monthly_labels, "Products Sold in ");
+  setupChartUpdate('updateProdY', productOrders, prod_orders_yearly_counts, prod_orders_yearly_labels, "Products Sold in ");
+
+  // Set customer orders
+  setupChartUpdate('updateCustM', customerOrders, cust_orders_monthly_counts, cust_orders_monthly_labels, "Customer Orders in ");
+  setupChartUpdate('updateCustY', customerOrders, cust_orders_yearly_counts, cust_orders_yearly_labels, "Customer Orders in ");
 });
 
-// Pie Chart
-var pieChart = new Chart(document.getElementById('pieDash'), {
-  type: 'pie',
-  data: {
-    labels: pie_labels,
-    datasets: [{
-      data: pie_counts,
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      title: {
-        display: true,
-        text: "Monthly Sales by Products",
-      },
-      legend: {
-        position: 'bottom',
-      },
-      tooltip: {
-        callbacks: {
-          label: function(tooltipItem) {
-            return '$' + tooltipItem.raw.toFixed(2); // Add dollar sign and format to 2 decimal places
-          }
-        }
-      }
-    },
-  },
-});
-
-// Line Chart
-var lineChart = new Chart(document.getElementById('lineDash'), {
+// Monthly sales chart
+var monthlySales = new Chart(document.getElementById('monthlySales'), {
   type: 'line',
   data: {
-    labels: line_labels,
+    labels: annual_sales_labels,
     datasets: [{
-      data: line_counts, // Adjusted data to be numbers
-      borderColor: linkColor,
+      data: annual_sales_counts,
+      // borderColor: 
       fill: false
     }]
   },
@@ -87,7 +44,7 @@ var lineChart = new Chart(document.getElementById('lineDash'), {
     plugins: {
       title: {
         display: true,
-        text: "Annual Sales",
+        text: "Monthly Revenue " + current_year,
       },
       legend: {
         display: false,
@@ -120,4 +77,117 @@ var lineChart = new Chart(document.getElementById('lineDash'), {
       }
     }
   }
+});
+
+// Product orders chart
+var productOrders = new Chart(document.getElementById('productOrders'), {
+  type: 'bar',
+  data: {
+    labels: prod_orders_monthly_labels,
+    datasets: [{
+      data: prod_orders_monthly_counts,
+      backgroundColor: colors,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      title: {
+        display: true,
+        text: "Products Sold in "+ month_name,
+      },
+      legend: {
+        display: false,
+      }
+    },
+    scales: {
+      x: {
+        ticks: {
+          stepSize: 1
+        },
+      }
+    },
+  },
+});
+
+// Stock level chart
+var stockLevel = new Chart(document.getElementById('stockLevel'), {
+  type: 'bar',
+  data: {
+    labels: stock_level_labels,
+    datasets: [{
+      data: stock_level_counts,
+      backgroundColor: function(context) {
+        const value = context.raw;  // Access the value of the data point
+        return value < 20 ? dangerColor : successColor;  // Change the color based on the value
+      },
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      title: {
+        display: true,
+        text: "Stock Level",
+      },
+      legend: {
+        display: false,
+      }
+    },
+  },
+});
+
+// Customer orders chart
+var customerOrders = new Chart(document.getElementById('customerOrders'), {
+  type: 'bar',
+  data: {
+    labels: cust_orders_monthly_labels,
+    datasets: [{
+      data: cust_orders_monthly_counts,
+      backgroundColor: colors,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      title: {
+        display: true,
+        text: "Customer Orders " + month_name,
+      },
+      legend: {
+        display: false,
+      }
+    },
+    scales: {
+      y: {
+        ticks: {
+          stepSize: 1
+        },
+      }
+    },
+  },
+});
+
+// Region Comparison chart
+var regionCompare = new Chart(document.getElementById('regionCompare'), {
+  type: 'pie',
+  data: {
+    labels: region_compare_labels,
+    datasets: [{
+      data: region_compare_counts,
+      // backgroundColor:
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'left',  // Position the legend to the left
+      },
+    },
+  },
 });

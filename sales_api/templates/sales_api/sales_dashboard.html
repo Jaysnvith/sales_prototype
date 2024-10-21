@@ -6,125 +6,265 @@
 {% endblock %}
 
 {% block content %}
-  <!-- Header -->
-  <div class="block">
-    <div class="level">
-      <div class="level-left">
-        <span class="icon-text is-size-4">
-          <span class="icon"><i class="fa-solid fa-gauge"></i></span>
-          <span>Dashboard</span>
-        </span>
-      </div>
-      <div class="level-right">
-        
-        <!-- Export PDF -->
-        <button class="button" type="submit" name="generate_pdf" form='dash-form'>Export</button>
+<!-- Header -->
+<div class="block">
+  <div class="level">
+    <div class="level-left">
+      <span class="icon-text is-size-4">
+        <span class="icon"><i class="fa-solid fa-gauge"></i></span>
+        <span>Dashboard</span>
+      </span>
+    </div>
+    <div class="level-right">
+      <!-- Export PDF -->
+      <button class="button" type="submit" name="generate_pdf" form="dash-form">Export</button>
 
-        <!-- Date Select -->
-        <form method="POST" action="{% url 'sales_api:dashboard' %}" id="dash-form">
-          {% csrf_token %}
-        </form>
+      <!-- Date Select Form -->
+      <form method="POST" action="{% url 'sales_api:dashboard' %}" id="dash-form">
+        {% csrf_token %}
+        
         <div class="field has-addons">
           <div class="control">
             <div class="select">
               <select name="months" id="month-input" form="dash-form">
-                {% for item in month %}
-                  <option value="{{ item }}" {% if item == month_select %} selected {% endif %}>{{ item }}</option>
+                {% for item in date.month %}
+                  <option value="{{ item }}" {% if item == date.month_select %} selected {% endif %}>{{ item }}</option>
                 {% endfor %}
               </select>
             </div>
           </div>
           <div class="control">
-            <input name="year" id="year-input" class="input" type="number" min="1000" max="9999" value="{{ year_select }}" form="dash-form">
+            <input name="year" id="year-input" class="input" type="number" min="1000" max="9999" value="{{ date.year_select }}" form="dash-form">
           </div>
         </div>
-
-      </div>
+      </form>
     </div>
   </div>
+</div>
 
-  <!-- Report -->
-  <div class="columns is-multiline">
-    <!-- Products and Customers -->
-    <div class="column is-two-fifths">
-      <div class="box is-floating-y">
-        <nav class="level is-mobile has-text-centered">
-          <div class="level-item">
-            <a class="is-colorized" href="{% url 'sales_api:product' %}">
-              <span class="icon-text">
-                <span class="is-size-3">{{ total_item|safe }}</span>
-                <span class="icon"><i class="fa-solid fa-boxes-stacked fa-beat"></i></span>
-              </span>
-              <p>Products</p>
-            </a>
-          </div>
-          <div class="level-item">
-            <a class="is-colorized" href="{% url 'sales_api:customer' %}">
-              <span class="icon-text">
-                <span class="is-size-3">{{ total_cust|safe }}</span>
-                <span class="icon"><i class="fa-solid fa-users fa-beat"></i></span>
-              </span>
-              <p>Customers</p>
-            </a>
-          </div>
-        </nav>
-      </div>
-      <!-- Monthly Recapitulation -->
-      <div class="card is-floating-y">
-        <div class="card-header">
-          <p class="card-header-title">Monthly Recapitulation</p>
-        </div>
-        <div class="card-content">
-          <nav class="level">
-            <div class="level-item">
-              <p class="is-size-3 has-text-weight-bold">${{ current_income_sum|safe|intcomma }}</p>
-            </div>
-            <div class="level-item">
-              <span class="icon-text is-size-5 {% if income_diff < 0 %} has-text-danger">
-                <span class="icon"><i class="fa-solid fa-arrow-down fa-xs fa-beat"></i></span>
-              {% else %} has-text-success">
-                <span class="icon"><i class="fa-solid fa-arrow-up fa-xs fa-beat"></i></span>
-              {% endif %}
-                <span>{{ income_diff|safe|floatformat }}%</span>
-              </span>
-            </div>
-          </nav>
-          <a class="is-colorized" href="{% url 'sales_api:sale' %}">
-            <p class="is-size-3 has-text-centered">{{ current_purchases_sum|safe }} Purchases</p>
-          </a>
-        </div>
-      </div>
+<!-- Dashboard Content -->
+<!-- Sales -->
+<div class="card">
+  <header class="card-header">
+    <h1 class="card-header-title">Sales</h1>
+  </header>
+
+  <div class="card-content">
+    
+    <!-- Line Chart -->
+    <div class="box" style="height:40vh">
+      <canvas id="monthlySales"></canvas>
     </div>
 
-    <!-- Charts -->
-    <div class="column is-three-fifths">
-      <div class="box is-floating-y">
-        <canvas id="pieDash"></canvas>
+    <div class="columns has-text-centered">
+
+      <!-- Total Orders Section -->
+      <div class="column">
+        <div class="box">
+          <h1 class="title is-5">Total Orders {{ date.month_select }}</h1>
+          <div class="has-text-centered">
+            <span>{{ kpi.order.total|safe }}</span>
+            <span class="icon-text 
+              {% if kpi.order.growth_rate < 0 %} has-text-danger {% else %} has-text-success {% endif %}">
+              <span class="icon">
+                <i class="fa-solid fa-caret-{% if kpi.order.growth_rate < 0 %}down{% else %}up{% endif %} fa-beat"></i>
+              </span>
+              <span>{{ kpi.order.growth_rate|safe|floatformat }}%</span>
+            </span>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="column">
-      <div class="box is-floating-y" style="min-height: 50vh;">
-        <canvas id="barDash"></canvas>
+
+      <!-- Average Order Value Section -->
+      <div class="column">
+        <div class="box">
+          <h1 class="title is-5">Average Order {{ date.month_select }}</h1>
+          <div class="has-text-centered">
+            <span>Rp{{ kpi.aov.total|safe|intcomma }}</span>
+            <span class="icon-text 
+              {% if kpi.aov.growth_rate < 0 %} has-text-danger {% else %} has-text-success {% endif %}">
+              <span class="icon">
+                <i class="fa-solid fa-caret-{% if kpi.aov.growth_rate < 0 %}down{% else %}up{% endif %} fa-beat"></i>
+              </span>
+              <span>{{ kpi.aov.growth_rate|safe|floatformat }}%</span>
+            </span>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="column">
-      <div class="box is-floating-y">
-        <canvas id="lineDash"></canvas>
+
+      <!-- Total Revenue Section -->
+      <div class="column">
+        <div class="box">
+          <h1 class="title is-5">Total Revenue {{ date.month_select }}</h1>
+          <div class="has-text-centered">
+            <span>Rp{{ kpi.revenue.total|safe|intcomma }}</span>
+            <span class="icon-text 
+              {% if kpi.revenue.growth_rate < 0 %} has-text-danger {% else %} has-text-success {% endif %}">
+              <span class="icon">
+                <i class="fa-solid fa-caret-{% if kpi.revenue.growth_rate < 0 %}down{% else %}up{% endif %} fa-beat"></i>
+              </span>
+              <span>{{ kpi.revenue.growth_rate|safe|floatformat }}%</span>
+            </span>
+          </div>
+        </div>
       </div>
+
     </div>
   </div>
+</div>
 
-  <!-- JavaScript for Charts -->
-  <script>
-    // Define chartData variable
-    let month_name = "{{ month_select }}";
-    let current_year = "{{ year_select }}";
+<!-- Product -->
+<div class="card">
+  <header class="card-header">
+    <h1 class="card-header-title">Product</h1>
+  </header>
 
-    let bar_labels = {{ bar_data.labels|safe }};
-    let bar_counts = {{ bar_data.counts|safe }};
-    let pie_labels = {{ pie_data.labels|safe }};
-    let pie_counts = {{ pie_data.counts|safe }};
-    let line_labels = {{ line_data.labels|safe }};
-    let line_counts = {{ line_data.counts|safe }};
-  </script>
+  <div class="card-content">
+    
+    <!-- Stock Overview -->
+    <div class="columns is-vcentered">
+
+      <!-- Total Stock and Sold Units -->
+      <div class="column is-narrow">
+        <div class="box has-text-centered">
+          <p class="title is-5">Units Sold in  {{ date.month_select }}</p>
+          <p class="">{{ kpi.products.monthly|safe }} / 25 Units (Quota)</p>
+          <hr>
+          <progress class="progress is-small is-success" value="{{ kpi.products.monthly|safe }}" max="25"></progress>
+        </div>
+        <div class="box has-text-centered">
+          <p class="title is-5">Units Sold in  {{ date.year_select }}</p>
+          <p class="">{{ kpi.products.yearly|safe }} / 300 Units (Quota)</p>
+          <hr>
+          <progress class="progress is-small is-success" value="{{ kpi.products.yearly|safe }}" max="300"></progress>
+        </div>
+      </div>
+
+      <!-- Product Orders Chart -->
+      <div class="column">
+        <div class="box">
+          <button id="updateProdM" class="button is-small">Monthly</button>
+          <button id="updateProdY" class="button is-small">Yearly</button>
+          <hr>
+          <div style="height:40vh">
+            <canvas id="productOrders"></canvas>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Stock Level Chart -->
+    <div class="box">
+      <p><strong class="title is-5">Total Stock : </strong>{{ kpi.product.total|safe }} Units</p>
+      <hr>
+      <div class="mb-6" style="height:40vh">
+        <canvas id="stockLevel"></canvas>
+      </div>
+
+      <!-- Low Stock Warning -->
+      {% if kpi.products.low %}
+      <article class="message is-danger">
+        <div class="message-header">
+          <p>⚠️ Shortage</p>
+        </div>
+        <div class="message-body">
+          <ul>
+            {% for item in kpi.products.low %}
+            <li>
+              <strong>{{ item.name }}</strong>: 
+              <span class="has-text-weight-bold">{{ item.stock }}</span> units remaining.
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </article>
+      {% else %}
+      <div class="notification is-success">
+        <p>No products are currently in low stock.</p>
+      </div>
+      {% endif %}
+
+    </div>
+
+  </div>
+</div>
+
+<!-- Customer Insights -->
+<div class="card">
+  <!-- Card Header -->
+  <header class="card-header-title">Customer Insights</header>
+
+  <!-- Card Content -->
+  <div class="card-content">
+
+    <!-- Total Customers Box -->
+    <div class="box">
+      <p>
+        <strong class="title is-5">Total Customers: </strong>
+        {{ kpi.customer.total|safe }}
+      </p>
+      <hr>
+      <!-- Region Comparison Chart -->
+      <div class="chart-container" style="height: 40vh;">
+        <canvas id="regionCompare"></canvas>
+      </div>
+    </div>
+
+    <!-- Customer Orders Box -->
+    <div class="box">
+      <!-- Buttons to Update Chart -->
+      <div class="buttons">
+        <button id="updateCustM" class="button is-small">Monthly</button>
+        <button id="updateCustY" class="button is-small">Yearly</button>
+      </div>
+      <hr>
+      <!-- Customer Orders Chart -->
+      <div class="chart-container" style="height: 40vh;">
+        <canvas id="customerOrders"></canvas>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Predictive Analytics -->
+<div class="box">
+  <p>Predictive Analytics</p>
+  <p>If possible, include predictions based on historical sales data for future performance (using models like time series analysis).</p>
+</div>
+
+<!-- Performance KPIs -->
+<div class="box">
+  <p>Performance KPIs</p>
+  <p>Key performance indicators for the factory, such as sales goals vs. actual sales, customer satisfaction, or manufacturing output.</p>
+</div>
+
+<!-- JavaScript for Charts -->
+<script>
+  // Define Date
+  let month_name = "{{ date.month_select }}";
+  let current_year = "{{ date.year_select }}";
+
+  // Define Chart Data
+  let annual_sales_labels = {{ charts.annual_sales.labels|safe }};
+  let annual_sales_counts = {{ charts.annual_sales.counts|safe }};
+
+  let prod_orders_monthly_labels = {{ charts.prod_orders.monthly.labels|safe }};
+  let prod_orders_monthly_counts = {{ charts.prod_orders.monthly.counts|safe }};
+  let prod_orders_yearly_labels = {{ charts.prod_orders.yearly.labels|safe }};
+  let prod_orders_yearly_counts = {{ charts.prod_orders.yearly.counts|safe }};
+
+
+  let stock_level_labels = {{ charts.stock_level.labels|safe }};
+  let stock_level_counts = {{ charts.stock_level.counts|safe }};
+
+  let cust_orders_monthly_labels = {{ charts.cust_orders.monthly.labels|safe }};
+  let cust_orders_monthly_counts = {{ charts.cust_orders.monthly.counts|safe }};
+  let cust_orders_yearly_labels = {{ charts.cust_orders.yearly.labels|safe }};
+  let cust_orders_yearly_counts = {{ charts.cust_orders.yearly.counts|safe }};
+
+  let region_compare_labels = {{ charts.region_compare.labels|safe }};
+  let region_compare_counts = {{ charts.region_compare.counts|safe }};
+</script>
 {% endblock %}
