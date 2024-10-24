@@ -92,13 +92,9 @@ $(document).ready(function() {
       closeModal();
     }
   });
-
-
-  $('#month-input, #year-input').change(function() {
-    $('#dash-form').submit(); // Submit the form when the selection changes
-  });
   
-  // Notification
+
+  // NOTIFICATION
   $('.notification .delete').each(function() {
     var $delete = $(this);
     var $notification = $delete.parent();
@@ -107,4 +103,24 @@ $(document).ready(function() {
       $notification.remove();
     });
   });
+
+
+  // DASHBOARD DATE
+  $('#month-input, #year-input').change(function() {
+    $('#dash-form').submit(); // Submit the form when the selection changes
+  });
+
+  // CARD COLLAPSE
+  $('.card-header-icon').on('click', function(e) {
+      e.preventDefault();
+
+      const cardContent = $(this).closest('.card').find('.card-content');
+      if (cardContent.is(':visible')) {
+          cardContent.slideUp();
+      } else {
+          cardContent.slideDown();
+      }
+  });
+
 });
+
