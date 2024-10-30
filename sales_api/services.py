@@ -101,7 +101,7 @@ class ChartData:
         if monthly_data.empty:
             return no_forecast
         
-        model = ARIMA(monthly_data['total_price'], order=(1, 1, 0))
+        model = ARIMA(monthly_data['total_price'], order=(2, 1, 0))
         
         try:
             results = model.fit()
@@ -118,8 +118,9 @@ class ChartData:
         forecast.index = pd.to_datetime(forecast.index)
 
         return {
-            'labels': [date.strftime('%B') for date in forecast.index],  # Format the dates as "Month Year"
-            'counts': forecast.round().tolist(),  # Convert to float and round to 2 decimal places
+            'labels': [date.strftime('%B') for date in forecast.index],
+            'counts': forecast.round().tolist(), 
+            'summary': results.summary().as_html()
         }
 
     def get_prod_orders(self):
