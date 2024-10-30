@@ -53,12 +53,11 @@ def SalesDashboard(request):
     # Retrieve chart data
     chart_data = ChartData(month_select_val, year_select)
     annual_sales = chart_data.get_annual_sales()
-    prod_orders_monthly = chart_data.get_prod_orders_monthly()
-    prod_orders_yearly = chart_data.get_prod_orders_yearly()
+    forecast_sales = chart_data.get_forecast_sales()
+    prod_orders = chart_data.get_prod_orders()
+    cust_orders = chart_data.get_cust_orders()
     stock_level = chart_data.get_product_stock()
     region_compare = chart_data.get_region_compare()
-    cust_orders_monthly = chart_data.get_cust_orders_monthly()
-    cust_orders_yearly = chart_data.get_cust_orders_yearly()
     
     if request.method == 'POST' and 'generate_pdf' in request.POST:
         report_generator = SalesReportGenerator(month_select, year_select, region_compare)
@@ -102,14 +101,9 @@ def SalesDashboard(request):
         # Chart
         'charts': {
             'annual_sales': annual_sales,
-            'prod_orders': {
-                'monthly':prod_orders_monthly,
-                'yearly': prod_orders_yearly,
-            },
-            'cust_orders': {
-                'monthly': cust_orders_monthly,
-                'yearly': cust_orders_yearly,
-            },
+            'forecast_sales': forecast_sales,
+            'prod_orders': prod_orders,
+            'cust_orders': cust_orders,
             'stock_level': stock_level,
             'region_compare': region_compare,
         },

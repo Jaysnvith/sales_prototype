@@ -31,15 +31,25 @@ document.addEventListener('DOMContentLoaded', function() {
   setupChartUpdate('updateCustY', customerOrders, cust_orders_yearly_counts, cust_orders_yearly_labels, "Customer Orders in ");
 });
 
+console.log(annual_sales_counts); 
+
 // Monthly sales chart
 var monthlySales = new Chart(document.getElementById('monthlySales'), {
   type: 'line',
   data: {
-    labels: annual_sales_labels,
-    datasets: [{
-      data: annual_sales_counts,
-      borderColor: primaryColor,
-    }]
+    labels: [...annual_sales_labels, ...forecast_sales_labels],
+    datasets: [
+      {
+        label: "Records",
+        data: annual_sales_counts,
+        borderColor: primaryColor,
+      },
+      {
+        label: "Forecast",
+        data: [...Array(annual_sales_counts.length).fill(null), ...forecast_sales_counts],
+        borderColor: infoColor,
+      }
+    ]
   },
   options: {
     responsive: true,
@@ -55,9 +65,6 @@ var monthlySales = new Chart(document.getElementById('monthlySales'), {
         padding: {
           bottom: 25,
         }
-      },
-      legend: {
-        display: false,
       },
     },
     animations: {

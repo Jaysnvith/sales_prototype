@@ -14,6 +14,9 @@ from reportlab.graphics.charts.barcharts import VerticalBarChart
 
 from .models import Sale, Customer, Product
 
+import pandas as pd
+from statsmodels.tsa.arima.model import ARIMA
+
 # Sales Report
 class DescAnalytic:
     def __init__(self, month, year):
@@ -73,53 +76,96 @@ class ChartData:
         self.month = month
         self.year = year
 
+        # Change data value here
+        self.sales_df = pd.DataFrame(list(Sale.objects.values('quantity', 'product__name', 'customer__first_name', 'total_price', 'sale_date')))
+        self.prod_df = pd.DataFrame(list(Product.objects.values('name', 'stock')))
+        self.cust_df = pd.DataFrame(list(Customer.objects.values('region_type')))
+
     def get_annual_sales(self):
-        sales_monthly_sum = Sale.objects.filter(sale_date__year=self.year).annotate(month=ExtractMonth('sale_date')).values('month').annotate(total_sales=Sum('total_price')).order_by('month')
+        annual_sales = self.sales_df[self.sales_df['sale_date'].dt.year == self.year]
+        annual_sales.set_index('sale_date', inplace=True)
+        monthly_sales = annual_sales.resample('ME').sum()
         return {
-            'labels': [calendar.month_name[item['month']] for item in sales_monthly_sum],
-            'counts': [float(item['total_sales']) for item in sales_monthly_sum],
+            'labels': monthly_sales.index.strftime('%B').tolist(),
+            'counts': monthly_sales['total_price'].astype(float).tolist(),
         }
 
-    def get_prod_orders_monthly(self):
-        sales_top_products = Sale.objects.filter(sale_date__month=self.month, sale_date__year=self.year).values('product__name').annotate(total_quantity=Sum('quantity')).order_by('-total_quantity')
+    def get_forecast_sales(self):
+        forecast_df = self.sales_df[self.sales_df['sale_date'].dt.year == self.year][['sale_date', 'total_price']]
+        forecast_df.set_index('sale_date', inplace=True)
+        forecast_df['total_price'] = pd.to_numeric(forecast_df['total_price'])
+        monthly_data = forecast_df.resample('ME').sum()
+
+        no_forecast = {'labels': [], 'counts': []}
+        
+        if monthly_data.empty:
+            return no_forecast
+        
+        model = ARIMA(monthly_data['total_price'], order=(1, 1, 0))
+        
+        try:
+            results = model.fit()
+        except Exception as e:
+            print(f"Error fitting ARIMA model: {e}")
+            return no_forecast
+
+        remainingMonth = int(12 - self.sales_df['sale_date'].dt.month.max())
+
+        if remainingMonth <= 0:
+            return no_forecast
+        
+        forecast = results.forecast(steps=remainingMonth)
+        forecast.index = pd.to_datetime(forecast.index)
+
         return {
-            'labels': [item['product__name'] for item in sales_top_products],
-            'counts': [item['total_quantity'] for item in sales_top_products],
+            'labels': [date.strftime('%B') for date in forecast.index],  # Format the dates as "Month Year"
+            'counts': forecast.round().tolist(),  # Convert to float and round to 2 decimal places
         }
-    
-    def get_prod_orders_yearly(self):
-        sales_top_products = Sale.objects.filter(sale_date__year=self.year).values('product__name').annotate(total_quantity=Sum('quantity')).order_by('-total_quantity')
+
+    def get_prod_orders(self):
+        products_df = self.sales_df[['sale_date', 'product__name', 'quantity']]
+        
+        annual_products = products_df[products_df['sale_date'].dt.year == self.year]
+        annual_top_products = annual_products.groupby('product__name')['quantity'].sum().reset_index().sort_values(by='quantity', ascending=False)
+
+        monthly_products = annual_products[annual_products['sale_date'].dt.month == self.month]
+        monthly_top_products = monthly_products.groupby('product__name')['quantity'].sum().reset_index().sort_values(by='quantity', ascending=False)
+        
         return {
-            'labels': [item['product__name'] for item in sales_top_products],
-            'counts': [item['total_quantity'] for item in sales_top_products],
+            'monthly_labels': monthly_top_products['product__name'].tolist(),
+            'monthly_counts': monthly_top_products['quantity'].tolist(),
+            'yearly_labels': annual_top_products['product__name'].tolist(),
+            'yearly_counts': annual_top_products['quantity'].tolist(),
+        }
+
+    def get_cust_orders(self):
+        customer_df = self.sales_df[['sale_date', 'customer__first_name', 'quantity']]
+        
+        annual_customer = customer_df[customer_df['sale_date'].dt.year == self.year]
+        annual_customer_group = annual_customer.groupby('customer__first_name')['quantity'].sum().reset_index().sort_values(by='quantity', ascending=False)
+
+        monthly_customer = annual_customer[annual_customer['sale_date'].dt.month == self.month]
+        monthly_customer_group = monthly_customer.groupby('customer__first_name')['quantity'].sum().reset_index().sort_values(by='quantity', ascending=False)
+        
+        return {
+            'monthly_labels': monthly_customer_group['customer__first_name'].tolist(),
+            'monthly_counts': monthly_customer_group['quantity'].tolist(),
+            'yearly_labels': annual_customer_group['customer__first_name'].tolist(),
+            'yearly_counts': annual_customer_group['quantity'].tolist(),
         }
     
     def get_product_stock(self):
-        product_stock_level = Product.objects.all().values('name', 'stock').order_by('name')
+        stock_df = self.prod_df[['name', 'stock']].sort_values(by='name')
         return {
-            'labels': [item['name'] for item in product_stock_level],
-            'counts': [float(item['stock']) for item in product_stock_level],
-        }
-    
-    def get_cust_orders_monthly(self):
-        sales_quantity_sum = Sale.objects.filter(sale_date__month=self.month, sale_date__year=self.year).values('customer__first_name').annotate(total_quantity=Sum('quantity')).order_by('-total_quantity')
-        return {
-            'labels': [item['customer__first_name'] for item in sales_quantity_sum],
-            'counts': [item['total_quantity'] for item in sales_quantity_sum],
-        }
-    
-    def get_cust_orders_yearly(self):
-        sales_quantity_sum = Sale.objects.filter(sale_date__year=self.year).values('customer__first_name').annotate(total_quantity=Sum('quantity')).order_by('-total_quantity')
-        return {
-            'labels': [item['customer__first_name'] for item in sales_quantity_sum],
-            'counts': [item['total_quantity'] for item in sales_quantity_sum],
+            'labels': stock_df['name'].tolist(),
+            'counts': stock_df['stock'].tolist(),
         }
     
     def get_region_compare(self):
-        cust_region_compare = Customer.objects.values('region_type').annotate(count=Count('id'))
+        cust_region_df = self.cust_df[['region_type']].groupby('region_type').size().reset_index(name='count')
         return {
-            'labels': [item['region_type'] for item in cust_region_compare],
-            'counts': [item['count'] for item in cust_region_compare],
+            'labels': cust_region_df['region_type'].tolist(),
+            'counts': cust_region_df['count'].tolist(),
         }
 
 # Generate PDF

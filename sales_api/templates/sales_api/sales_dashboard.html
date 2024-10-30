@@ -54,7 +54,7 @@
     </button>
   </header>
   
-  <div class="card-content" style="display: none;">
+  <div class="card-content">
     
     <!-- Line Chart -->
     <div class="box" style="height: 50vh;">
@@ -244,17 +244,7 @@
   </div>
 </div>
 
-<!-- Predictive Analytics -->
-<div class="box">
-  <p>Predictive Analytics</p>
-  <p>If possible, include predictions based on historical sales data for future performance (using models like time series analysis).</p>
-</div>
-
-<!-- Performance KPIs -->
-<div class="box">
-  <p>Performance KPIs</p>
-  <p>Key performance indicators for the factory, such as sales goals vs. actual sales, customer satisfaction, or manufacturing output.</p>
-</div>
+{{ charts.forecast_sales.test }}
 
 <!-- JavaScript for Charts -->
 <script>
@@ -265,19 +255,21 @@
   // Define Chart Data
   let annual_sales_labels = {{ charts.annual_sales.labels|safe }};
   let annual_sales_counts = {{ charts.annual_sales.counts|safe }};
+  let forecast_sales_labels = {{ charts.forecast_sales.labels|safe }};
+  let forecast_sales_counts = {{ charts.forecast_sales.counts|safe }};
 
-  let prod_orders_monthly_labels = {{ charts.prod_orders.monthly.labels|safe }};
-  let prod_orders_monthly_counts = {{ charts.prod_orders.monthly.counts|safe }};
-  let prod_orders_yearly_labels = {{ charts.prod_orders.yearly.labels|safe }};
-  let prod_orders_yearly_counts = {{ charts.prod_orders.yearly.counts|safe }};
+  let prod_orders_monthly_labels = {{ charts.prod_orders.monthly_labels|safe }};
+  let prod_orders_monthly_counts = {{ charts.prod_orders.monthly_counts|safe }};
+  let prod_orders_yearly_labels = {{ charts.prod_orders.yearly_labels|safe }};
+  let prod_orders_yearly_counts = {{ charts.prod_orders.yearly_counts|safe }};
+
+  let cust_orders_monthly_labels = {{ charts.cust_orders.monthly_labels|safe }};
+  let cust_orders_monthly_counts = {{ charts.cust_orders.monthly_counts|safe }};
+  let cust_orders_yearly_labels = {{ charts.cust_orders.yearly_labels|safe }};
+  let cust_orders_yearly_counts = {{ charts.cust_orders.yearly_counts|safe }};
 
   let stock_level_labels = {{ charts.stock_level.labels|safe }};
   let stock_level_counts = {{ charts.stock_level.counts|safe }};
-
-  let cust_orders_monthly_labels = {{ charts.cust_orders.monthly.labels|safe }};
-  let cust_orders_monthly_counts = {{ charts.cust_orders.monthly.counts|safe }};
-  let cust_orders_yearly_labels = {{ charts.cust_orders.yearly.labels|safe }};
-  let cust_orders_yearly_counts = {{ charts.cust_orders.yearly.counts|safe }};
 
   let region_compare_labels = {{ charts.region_compare.labels|safe }};
   let region_compare_counts = {{ charts.region_compare.counts|safe }};
