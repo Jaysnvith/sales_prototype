@@ -111,7 +111,7 @@ $(document).ready(function() {
   });
 
   // CARD COLLAPSE
-  $('.card-header-icon').on('click', function(e) {
+  $('.dashboard_card').on('click', function(e) {
       e.preventDefault();
 
       const cardContent = $(this).closest('.card').find('.card-content');
