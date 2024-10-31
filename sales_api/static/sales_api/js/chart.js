@@ -70,8 +70,8 @@ var monthlySales = new Chart(document.getElementById('monthlySales'), {
     animations: {
       tension: {
         easing: 'linear',
-        from: 0.5,
-        to: -0.25,
+        from: 0.25,
+        to: 0,
         loop: true
       },
     },
@@ -97,7 +97,7 @@ var monthlySales = new Chart(document.getElementById('monthlySales'), {
           }
         },
         ticks: {
-          stepSize: 200000,
+          stepSize: 250000,
           callback: function(value) { return '$' + value.toLocaleString(); }, // Format y-axis ticks
         },
       }
