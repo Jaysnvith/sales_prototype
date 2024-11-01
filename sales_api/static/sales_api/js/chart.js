@@ -23,12 +23,12 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Set product orders
-  setupChartUpdate('updateProdM', productOrders, prod_orders_monthly_counts,prod_orders_monthly_labels, "Products Sold in ");
-  setupChartUpdate('updateProdY', productOrders, prod_orders_yearly_counts, prod_orders_yearly_labels, "Products Sold in ");
+  setupChartUpdate('updateProdM', productOrders, prod_orders_monthly_counts,prod_orders_monthly_labels, "Order by Products in ");
+  setupChartUpdate('updateProdY', productOrders, prod_orders_yearly_counts, prod_orders_yearly_labels, "Order by Products in ");
 
   // Set customer orders
-  setupChartUpdate('updateCustM', customerOrders, cust_orders_monthly_counts, cust_orders_monthly_labels, "Customer Orders in ");
-  setupChartUpdate('updateCustY', customerOrders, cust_orders_yearly_counts, cust_orders_yearly_labels, "Customer Orders in ");
+  setupChartUpdate('updateCustM', customerOrders, cust_orders_monthly_counts, cust_orders_monthly_labels, "Order by Customers in ");
+  setupChartUpdate('updateCustY', customerOrders, cust_orders_yearly_counts, cust_orders_yearly_labels, "Order by Customers in ");
 });
 
 console.log(annual_sales_counts); 
@@ -122,7 +122,7 @@ var productOrders = new Chart(document.getElementById('productOrders'), {
     plugins: {
       title: {
         display: true,
-        text: "Products Sold in "+ month_name,
+        text: "Order by Products in "+ month_name,
         font: {
           size: 16,
           weight: 'bold',
@@ -208,7 +208,7 @@ var customerOrders = new Chart(document.getElementById('customerOrders'), {
     plugins: {
       title: {
         display: true,
-        text: "Customer Orders " + month_name,
+        text: "Order by Customers " + month_name,
         font: {
           size: 16,
           weight: 'bold',

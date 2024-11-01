@@ -46,7 +46,7 @@
 <!-- Sales -->
 <div class="card">
   <header class="card-header">
-    <h1 class="card-header-title">Sales</h1>
+    <h1 class="card-header-title">Sales - {{ date.month_select }} {{ date.year_select }}</h1>
     <button class="card-header-icon dashboard_card">
       <span class="icon">
         <i class="fas fa-angle-down" aria-hidden="true"></i>
@@ -66,7 +66,7 @@
       <!-- Total Orders Section -->
       <div class="column">
         <div class="box">
-          <h1 class="title is-5">Total Orders {{ date.month_select }}</h1>
+          <h1 class="title is-5">Total Orders</h1>
           <div class="has-text-centered">
             <span>{{ kpi.order.total|safe }}</span>
             <span class="icon-text 
@@ -83,7 +83,7 @@
       <!-- Average Order Value Section -->
       <div class="column">
         <div class="box">
-          <h1 class="title is-5">Average Order {{ date.month_select }}</h1>
+          <h1 class="title is-5">Average Order Value</h1>
           <div class="has-text-centered">
             <span>Rp{{ kpi.aov.total|safe|intcomma }}</span>
             <span class="icon-text 
@@ -100,7 +100,7 @@
       <!-- Total Revenue Section -->
       <div class="column">
         <div class="box">
-          <h1 class="title is-5">Total Revenue {{ date.month_select }}</h1>
+          <h1 class="title is-5">Total Revenue</h1>
           <div class="has-text-centered">
             <span>Rp{{ kpi.revenue.total|safe|intcomma }}</span>
             <span class="icon-text 
@@ -121,7 +121,7 @@
 <!-- Product -->
 <div class="card">
   <header class="card-header">
-    <h1 class="card-header-title">Product</h1>
+    <h1 class="card-header-title">Product - {{ date.month_select }} {{ date.year_select }}</h1>
     <button class="card-header-icon dashboard_card" aria-label="more options">
       <span class="icon">
         <i class="fas fa-angle-down" aria-hidden="true"></i>
@@ -137,13 +137,13 @@
       <!-- Total Stock and Sold Units -->
       <div class="column is-narrow">
         <div class="box has-text-centered">
-          <p class="title is-5">Units Sold in  {{ date.month_select }}</p>
+          <p class="title is-5">Units Sold Monthly</p>
           <p class="">{{ kpi.products.monthly|safe }} / 25 Units (Quota)</p>
           <hr>
           <progress class="progress is-small is-success" value="{{ kpi.products.monthly|safe }}" max="25"></progress>
         </div>
         <div class="box has-text-centered">
-          <p class="title is-5">Units Sold in  {{ date.year_select }}</p>
+          <p class="title is-5">Units Sold Yearly</p>
           <p class="">{{ kpi.products.yearly|safe }} / 300 Units (Quota)</p>
           <hr>
           <progress class="progress is-small is-success" value="{{ kpi.products.yearly|safe }}" max="300"></progress>
@@ -203,7 +203,7 @@
 <!-- Customer Insights -->
 <div class="card">
   <header class="card-header">
-    <h1 class="card-header-title">Customer</h1>
+    <h1 class="card-header-title">Customer - {{ date.month_select }} {{ date.year_select }}</h1>
     <button class="card-header-icon dashboard_card" aria-label="more options">
       <span class="icon">
         <i class="fas fa-angle-down" aria-hidden="true"></i>
