@@ -9,7 +9,7 @@ from django.views.generic import ListView, CreateView, UpdateView
 
 from .models import Sale, Product, Customer
 from .forms import UserForm, SaleForm, ProductForm, CustomerForm
-from .services import DescAnalytic, ChartData, SalesReportGenerator
+from .services import DescAnalytic, ChartData, SalesReportGenerator, get_exchange_rates
 
 def is_member(user):
     return user.groups.filter(name='Staff').exists()
@@ -64,6 +64,8 @@ def SalesDashboard(request):
         response = report_generator.generate()
         return response   
     
+    rates = 0 #get_exchange_rates()
+    
     context = {
         # Date
         'date': {
@@ -107,6 +109,8 @@ def SalesDashboard(request):
             'stock_level': stock_level,
             'region_compare': region_compare,
         },
+
+        'rates': rates,
     }
     
     return render(request, 'sales_api/sales_dashboard.html', context)

@@ -8,12 +8,17 @@
 {% block content %}
 <!-- Header -->
 <div class="block">
+  <span class="icon-text is-size-4">
+    <span class="icon"><i class="fa-solid fa-gauge"></i></span>
+    <span id="textElement">Dashboard</span>
+  </span>
+</div>
+
+<hr>
+<div class="block">
   <div class="level">
     <div class="level-left">
-      <span class="icon-text is-size-4">
-        <span class="icon"><i class="fa-solid fa-gauge"></i></span>
-        <span id="textElement">Dashboard</span>
-      </span>
+      <h1 class="title">Internal</h1>
     </div>
     <div class="level-right">
       <!-- Export PDF -->
@@ -240,6 +245,42 @@
         <canvas id="customerOrders"></canvas>
       </div>
     </div>
+
+  </div>
+</div>
+
+<hr>
+<div class="block">
+  <h1 class="title">External</h1>
+</div>
+
+<div class="card">
+  <header class="card-header">
+    <h1 class="card-header-title">Exchange Rate</h1>
+    <button class="card-header-icon dashboard_card" aria-label="more options">
+      <span class="icon">
+        <i class="fas fa-angle-down" aria-hidden="true"></i>
+      </span>
+    </button>
+  </header>
+
+  <!-- Card Content -->
+  <div class="card-content" style="display: none;">
+
+    {% if rates %}
+    <ul class="columns">
+        {% for currency, rate in rates.items %}
+        <div class="column">
+          <div class="box has-text-centered">
+            <h1 class="title">{{ currency }}</h1>
+            <p class="subtitle">{{ rate|floatformat }}</p>
+          </div>
+        </div>
+        {% endfor %}
+    </ul>
+    {% else %}
+      <p>Could not fetch exchange rates. Please try again later.</p>
+    {% endif %}
 
   </div>
 </div>

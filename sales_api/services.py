@@ -1,8 +1,11 @@
-import calendar
 from io import BytesIO
 
-from django.db.models import Sum, Count
-from django.db.models.functions import ExtractMonth
+import pandas as pd
+import requests
+from statsmodels.tsa.arima.model import ARIMA
+
+from django.conf import settings
+from django.db.models import Sum
 from django.http import HttpResponse
 
 from reportlab.lib import colors
@@ -13,9 +16,6 @@ from reportlab.graphics.shapes import Drawing
 from reportlab.graphics.charts.barcharts import VerticalBarChart
 
 from .models import Sale, Customer, Product
-
-import pandas as pd
-from statsmodels.tsa.arima.model import ARIMA
 
 # Sales Report
 class DescAnalytic:
@@ -168,6 +168,23 @@ class ChartData:
             'labels': cust_region_df['region_type'].tolist(),
             'counts': cust_region_df['count'].tolist(),
         }
+
+#  openexchangerates API
+def get_exchange_rates():
+    url = "https://openexchangerates.org/api/latest.json"
+    params = {
+        "app_id": settings.EXCHANGE_API_KEY,  # Your API key
+        "base": "USD",                        # Base currency (USD)
+        "symbols": "IDR,JPY,USD"              # Only fetch IDR and JPY rates
+    }
+    try:
+        response = requests.get(url, params=params)
+        response.raise_for_status()  # Check if the request was successful
+        data = response.json()       # Parse JSON response
+        return data["rates"]         # Return the exchange rates
+    except requests.RequestException as e:
+        print("Error fetching exchange rates:", e)
+        return None
 
 # Generate PDF
 class SalesReportGenerator:
