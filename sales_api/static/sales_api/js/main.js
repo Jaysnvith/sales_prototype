@@ -122,5 +122,17 @@ $(document).ready(function() {
       }
   });
 
+  $("#show-password-checkbox").on('click', function() {
+    const $passwordField = $("#id_password");
+    const isChecked = $("#show-password-checkbox").is(":checked");
+
+    console.log("Checkbox checked:", isChecked);  // Logs whether checkbox is checked
+    console.log("Password field type before change:", $passwordField.attr("type"));  // Logs current type of password field
+
+    $passwordField.attr("type", isChecked ? "text" : "password");
+
+    console.log("Password field type after change:", $passwordField.attr("type"));  // Logs type of password field after change
+  });
+
 });
 
