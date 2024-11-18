@@ -8,12 +8,13 @@ from django.conf import settings
 from django.db.models import Sum
 from django.http import HttpResponse
 
-from reportlab.lib import colors
+from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer
 from reportlab.graphics.shapes import Drawing
+from reportlab.graphics.charts.lineplots import LinePlot
 from reportlab.graphics.charts.barcharts import VerticalBarChart
+from reportlab.graphics.charts.textlabels import Label
+from reportlab.graphics import renderPDF
 
 from .models import Sale, Customer, Product
 
@@ -187,73 +188,115 @@ def get_exchange_rates():
         return None
 
 # Generate PDF
-class SalesReportGenerator:
-
-    def __init__(self, month, year, pie_data):
+class GenerateReport:
+    def __init__(self, month: str, year: int, rev_total: float, order_total: int, aov: float, annual_sales: dict, prod_orders: dict, cust_orders: dict):
+        self.title = "Laporan Sales"
         self.month = month
         self.year = year
-        self.pie_data = pie_data
-        self.buffer = BytesIO()
-        self.response = HttpResponse(content_type='application/pdf')
-        self.response['Content-Disposition'] = 'attachment; filename="report.pdf"'
-        self.doc = SimpleDocTemplate(self.buffer, pagesize=A4)
-        self.styles = getSampleStyleSheet()
-        self.elements = []
+        self.rev_total = rev_total
+        self.order_total = order_total
+        self.aov = aov
+        self.annual_sales = [int(value) for value in annual_sales['counts']]
+        self.prod_orders_counts = [int(value) for value in prod_orders['monthly_counts']]
+        self.prod_orders_labels = prod_orders['monthly_labels']
+        self.cust_orders_counts = [int(value) for value in cust_orders['monthly_counts']]
+        self.cust_orders_labels = cust_orders['monthly_labels']
 
-    def create_title(self):
-        title = Paragraph(f"Sales Report ({self.month}, {self.year})", self.styles['Title'])
-        self.elements.append(title)
-        self.elements.append(Spacer(1, 12))
+    def report_pdf(self) -> HttpResponse:
+        buffer = BytesIO()
+        p = canvas.Canvas(buffer, pagesize=A4)
+        
+        # Add header, chart, and summary
+        self.add_header(p)
+        self.add_line_chart(p, self.annual_sales, 100, 550)
+        self.add_summary(p)
+        self.add_bar_chart(p, self.prod_orders_counts, self.prod_orders_labels, 100, 250, "Sales by Products")
+        self.add_bar_chart(p, self.cust_orders_counts, self.cust_orders_labels, 100, 50, "Sales by Customer")
+        
+        # Save PDF to buffer and return HTTP response
+        p.showPage()
+        p.save()
+        buffer.seek(0)
+        
+        return HttpResponse(buffer, content_type="application/pdf", headers={"Content-Disposition": "inline; filename='report.pdf'"})
+    
+    def add_header(self, p: canvas.Canvas):
+        """Adds title and header to the PDF"""
+        p.setFont("Helvetica-Bold", 18)
+        p.drawString(100, 750, f"{self.title} - {self.month} {self.year}")
+        p.line(100, 740, 500, 740)
 
-    def create_header(self, text, style='Heading2'):
-        header = Paragraph(text, self.styles[style])
-        self.elements.append(header)
-        self.elements.append(Spacer(1, 12))
+    def add_summary(self, p: canvas.Canvas):
+        """Adds summary text for revenue, order total, and average order value"""
+        p.setFont("Helvetica", 11)
+        self.draw_text(p, 100, 530, f"Revenue Total = Rp{self.format_currency(self.rev_total)}")
+        self.draw_text(p, 100, 515, f"Average Order Value = Rp{self.format_currency(self.aov)}")
+        self.draw_text(p, 100, 500, f"Order Total = {self.order_total}")
 
-    def create_table(self):
-        data = [["Items", "Sales"]] + [list(pair) for pair in zip(self.pie_data["labels"], self.pie_data["counts"])]
-        table = Table(data)
-        table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 12),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black),
-        ]))
-        self.elements.append(table)
-        self.elements.append(Spacer(1, 24))
+    def add_line_chart(self, p: canvas.Canvas, chart_data: list, posx: int, posy: int):
+        """Adds a line chart to the PDF with sales data"""
+        drawing = Drawing(700, 200)
+        line_chart = LinePlot()
+        
+        # Set chart position and dimensions
+        line_chart.x, line_chart.y = 50, 30
+        line_chart.height, line_chart.width = 100, 340
 
-    def create_bar_chart(self):
+        # Prepare data for LinePlot
+        y_data = [chart_data]
+        x_data = [list(range(len(y))) for y in y_data]
+        data = list(zip(*x_data, *y_data))
+        line_chart.data = [data]
+
+        # Add chart title
+        title = Label()
+        title.setOrigin(200, 150)
+        title.setText(f"{self.year} Overtime Sales")
+        title.fontName = "Helvetica-Bold"
+        title.fontSize = 12
+        drawing.add(title)
+
+        drawing.add(line_chart)
+        renderPDF.draw(drawing, p, posx, posy)
+
+    def add_bar_chart(self, p: canvas.Canvas, chart_data: list, chart_label: list, posx: int, posy: int, chart_title: str):
+        # Create a Drawing object as a container for the chart
         drawing = Drawing(400, 200)
+
+        # Initialize the BarChart and configure it
         bar_chart = VerticalBarChart()
         bar_chart.x = 50
         bar_chart.y = 50
-        bar_chart.height = 125
-        bar_chart.width = 300
-        bar_chart.data = [[10000, 15000, 20000, 18000]]
-        bar_chart.categoryAxis.categoryNames = ['January', 'February', 'March', 'April']
-        bar_chart.bars[0].fillColor = colors.green
-        bar_chart.valueAxis.valueMin = 0
-        bar_chart.valueAxis.valueMax = 25000
-        bar_chart.valueAxis.valueStep = 5000
-        bar_chart.valueAxis.labelTextFormat = '$%d'
+        bar_chart.height = 100
+        bar_chart.width = 340
+
+        # Example data: categories (x) and values (y)
+        data = [chart_data]
+        bar_chart.data = data
+
+        # Configure x-axis and y-axis labels
+        bar_chart.categoryAxis.categoryNames = chart_label  # x-axis categories
+
+        # Add a title to the chart
+        title = Label()
+        title.setOrigin(200, 180)
+        title.setText(chart_title)
+        title.fontName = "Helvetica-Bold"
+        title.fontSize = 12
+        drawing.add(title)
+
+        # Add the BarChart to the drawing
         drawing.add(bar_chart)
-        self.elements.append(drawing)
 
-    def build_pdf(self):
-        self.create_title()
-        self.create_header("Monthly Sales Data")
-        self.create_table()
-        self.create_header("Sales Overview")
-        self.create_bar_chart()
-        self.doc.build(self.elements)
-        pdf = self.buffer.getvalue()
-        self.buffer.close()
-        self.response.write(pdf)
-        return self.response
+        # Render the drawing onto the PDF canvas at specific coordinates
+        renderPDF.draw(drawing, p, posx, posy)  # Adjust position as needed
 
-    def generate(self):
-        return self.build_pdf()
+    @staticmethod
+    def format_currency(value: float) -> str:
+        """Formats a float as currency without decimal points"""
+        return f"{value:,.0f}"
+
+    @staticmethod
+    def draw_text(p: canvas.Canvas, x: int, y: int, text: str):
+        """Draws a string on the PDF at specified coordinates"""
+        p.drawString(x, y, text)
