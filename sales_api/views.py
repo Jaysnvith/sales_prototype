@@ -9,7 +9,7 @@ from django.views.generic import ListView, CreateView, UpdateView
 
 from .models import Sale, Product, Customer
 from .forms import UserForm, SaleForm, ProductForm, CustomerForm
-from .services import DescAnalytic, ChartData, SalesReportGenerator, get_exchange_rates
+from .services import DescAnalytic, ChartData, GenerateReport, get_exchange_rates
 
 def is_member(user):
     return user.groups.filter(name='Staff').exists()
@@ -60,8 +60,8 @@ def SalesDashboard(request):
     region_compare = chart_data.get_region_compare()
     
     if request.method == 'POST' and 'generate_pdf' in request.POST:
-        report_generator = SalesReportGenerator(month_select, year_select, region_compare)
-        response = report_generator.generate()
+        report_generator = GenerateReport(month_select, year_select, curr_revenue_total, curr_order_total, curr_aov, annual_sales, prod_orders, cust_orders)
+        response = report_generator.report_pdf()
         return response   
     
     rates = 0 #get_exchange_rates()
