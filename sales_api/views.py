@@ -64,7 +64,7 @@ def SalesDashboard(request):
         response = report_generator.report_pdf()
         return response   
     
-    rates = 0 #get_exchange_rates()
+    rates = get_exchange_rates()
     
     context = {
         # Date
